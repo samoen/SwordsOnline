@@ -40,9 +40,9 @@ class OnlineFragment : Fragment() {
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        gridView_online.adapter = OnlineImageAdapter(context)
+        gridView_adventure.adapter = OnlineImageAdapter(context)
 
-        val p = (activity as MainActivity).currentPlayer.equipped
+        val p = CP().equipped
         button_head.setText(p[0]?.name)
         button_shoulders.setText(p[1]?.name)
         button_legs.setText(p[2]?.name)
@@ -64,42 +64,44 @@ class OnlineFragment : Fragment() {
                     for(i in 0..MAX_PLAYERS_MINUS_ONE){
                         if (playerNames[i]=="NO_NAME"){
                             playerNumber = i
-                            SetFireBaseEntry("Player${i}Name",(activity as MainActivity).currentPlayer.name)
+                            FB("Player${i}Name",CP().name)
                             break
                         }else if (i == MAX_PLAYERS_MINUS_ONE){
                             Toast.makeText(context,"Game Room 1 Full",Toast.LENGTH_SHORT).show()
                             fragmentManager.beginTransaction().replace(R.id.framelayout_main, MainFragment()).commit()
                         }
                     }
-                    (gridView_online.adapter as OnlineImageAdapter).PutHeroToPosition(playerNumber+3,playerNumber)
-                    (gridView_online.adapter as OnlineImageAdapter).notifyDataSetChanged()
+                    IA().PutHeroToPosition(playerNumber+3,playerNumber)
+                    IA().notifyDataSetChanged()
 
                     for (i in playerLocations){
                         if (i.key != playerNumber && playerNames[i.key]!="NO_NAME"){
-                            (gridView_online.adapter as OnlineImageAdapter).PutEnemyToPosition(i.value.toInt(),i.key)
+                            IA().PutEnemyToPosition(i.value.toInt(),i.key)
                         }
                     }
 
-                    SetFireBaseEntry("Player${playerNumber}Ready","NOT_READY")
-                    SetFireBaseEntry("Player${playerNumber}Location", (gridView_online.adapter as OnlineImageAdapter).PlayersBoardPos[playerNumber].toString())
+                    FB("Player${playerNumber}Ready","NOT_READY")
+                    FB("Player${playerNumber}Location", IA().PlayersBoardPos[playerNumber].toString())
                     firstDatabaseRead = false
                     secondDatabaseRead = true
                 }else if(this@OnlineFragment.activity != null) {
                     for (i in 0..MAX_PLAYERS_MINUS_ONE){
                         if(i != playerNumber){
-                            if(playerNames[i] == "NO_NAME" && (gridView_online.adapter as OnlineImageAdapter).PlayersBoardPos.containsKey(i)){
-                                (gridView_online.adapter as OnlineImageAdapter).PutEmptyAtPosition( (gridView_online.adapter as OnlineImageAdapter).PlayersBoardPos[i] )
-                                (gridView_online.adapter as OnlineImageAdapter).PlayersBoardPos.remove(i)
+                            if(playerNames[i] == "NO_NAME" && IA().PlayersBoardPos.containsKey(i)){
+                                IA().PutEmptyAtPosition( IA().PlayersBoardPos[i] )
+                                IA().PlayersBoardPos.remove(i)
                             }
-                            if (playerNames[i] != "NO_NAME" && !(gridView_online.adapter as OnlineImageAdapter).PlayersBoardPos.containsKey(i)){
-                                (gridView_online.adapter as OnlineImageAdapter). PutEnemyToPosition( playerLocations[i]?.toInt()?:0,i)
-                                (gridView_online.adapter as OnlineImageAdapter).PlayersBoardPos.put(i,playerLocations[i]?.toInt()?:0)
+                            if (playerNames[i] != "NO_NAME" && !IA().PlayersBoardPos.containsKey(i)){
+                                IA(). PutEnemyToPosition( playerLocations[i]?.toInt()?:0,i)
+                                IA().PlayersBoardPos.put(i,playerLocations[i]?.toInt()?:0)
                             }
                         }
                     }
                     if(playerReadies[playerNumber]=="READY" && CheckOtherPlayersReadyOrWaitingOrNoName()){
-                        (gridView_online.adapter as OnlineImageAdapter).RemoveMarkers(activeMarkers)
-                        cooldowns.put(activeSlot,(activity as MainActivity).currentPlayer.equipped[activeSlot]?.cooldown?:0)
+                        IA().RemoveMarkers(activeMarkers)
+                        if (activeSlot != 5){
+                            cooldowns.put(activeSlot,CP().equipped[activeSlot]?.cooldown?:0)
+                        }
                         DecrementAllCooldowns()
                         val speedorder = playerSpeeds.values.sortedDescending()
                         var i = 1
@@ -107,10 +109,10 @@ class OnlineFragment : Fragment() {
                             Handler().postDelayed( {ActivateHero(v.toInt())},300*i.toLong() )
                             i++
                         }
-                        SetFireBaseEntry("Player${playerNumber}Ready","WAITING")
+                        FB("Player${playerNumber}Ready","WAITING")
 
                     }else if (playerReadies[playerNumber]=="WAITING" && CheckOtherPlayersWaitingOrNotReadyOrNoName()){
-                        SetFireBaseEntry("Player${playerNumber}Ready","NOT_READY")
+                        FB("Player${playerNumber}Ready","NOT_READY")
                     }
                 }
             }
@@ -138,21 +140,22 @@ class OnlineFragment : Fragment() {
             SelectAbility(activeSlot)
         }
         button_wait.setOnClickListener {
-            (gridView_online.adapter as OnlineImageAdapter).RemoveMarkers(activeMarkers)
-            SetFireBaseEntry("Player${playerNumber}Type","MOVE")
-            SetFireBaseEntry("Player${playerNumber}Position",(gridView_online.adapter as OnlineImageAdapter).PlayersBoardPos[playerNumber].toString())
-            SetFireBaseEntry("Player${playerNumber}Speed","0")
-            SetFireBaseEntry("Player${playerNumber}Ready","READY")
+            activeSlot = 5
+            IA().RemoveMarkers(activeMarkers)
+            FB("Player${playerNumber}Type","MOVE")
+            FB("Player${playerNumber}Position",IA().PlayersBoardPos[playerNumber].toString())
+            FB("Player${playerNumber}Speed","0")
+            FB("Player${playerNumber}Ready","READY")
         }
 
-        gridView_online.setOnItemClickListener(object: AdapterView.OnItemClickListener{
+        gridView_adventure.setOnItemClickListener(object: AdapterView.OnItemClickListener{
             override fun onItemClick(parent: AdapterView<*>?, _view: View?, position: Int, id: Long) {
                 if(cooldowns[activeSlot]==0){
                     if(activeMarkers.contains(CalculatePairFromPosition(position))){
-                        SetFireBaseEntry("Player${playerNumber}Type",activeAbilityType.toUpperCase())
-                        SetFireBaseEntry("Player${playerNumber}Position",position.toString())
-                        SetFireBaseEntry("Player${playerNumber}Speed",(activity as MainActivity).currentPlayer.current_speed.toString())
-                        SetFireBaseEntry("Player${playerNumber}Ready","READY")
+                        FB("Player${playerNumber}Type",activeAbilityType.toUpperCase())
+                        FB("Player${playerNumber}Position",position.toString())
+                        FB("Player${playerNumber}Speed",CP().current_speed.toString())
+                        FB("Player${playerNumber}Ready","READY")
                     }
                 }else Toast.makeText(context,"Cooldown ${cooldowns[activeSlot]}",Toast.LENGTH_SHORT).show()
             }
@@ -164,7 +167,7 @@ class OnlineFragment : Fragment() {
             simpleAlert.setMessage("Do you really want to leave this adventure?")
             simpleAlert.setButton(AlertDialog.BUTTON_POSITIVE, "OK", object : DialogInterface.OnClickListener{
                 override fun onClick(dialog: DialogInterface?, which: Int) {
-                    SetFireBaseEntry("Player${playerNumber}Name","NO_NAME")
+                    FB("Player${playerNumber}Name","NO_NAME")
                     fragmentManager.beginTransaction().replace(R.id.framelayout_main, MainFragment()).commit()
                 }
             })
@@ -173,18 +176,18 @@ class OnlineFragment : Fragment() {
     }
 
     fun ActivateHero(pNum:Int){
-        (gridView_online.adapter as OnlineImageAdapter).ClearLastMiss()
-        (gridView_online.adapter as OnlineImageAdapter).notifyDataSetChanged()
+        IA().ClearLastMiss()
+        IA().notifyDataSetChanged()
         if (pNum != playerNumber){
             if (playerTypes[pNum] == "MOVE"){
                 var illegalMovement = false
                 for (i in 0..MAX_PLAYERS_MINUS_ONE){
-                    if (i != pNum){ if ((gridView_online.adapter as OnlineImageAdapter).PlayersBoardPos[i] == playerPositions[pNum]?.toInt()) illegalMovement = true }
+                    if (i != pNum){ if (IA().PlayersBoardPos[i] == playerPositions[pNum]?.toInt()) illegalMovement = true }
                 }
-                if (!illegalMovement) (gridView_online.adapter as OnlineImageAdapter).PutEnemyToPosition(playerPositions[pNum]!!.toInt(),pNum)
+                if (!illegalMovement) IA().PutEnemyToPosition(playerPositions[pNum]!!.toInt(),pNum)
             }else if (playerTypes[pNum]=="ATTACK" && pNum != playerNumber){
-                if(playerPositions[pNum]!!.toInt() == (gridView_online.adapter as OnlineImageAdapter).PlayersBoardPos[playerNumber]){
-                    SetFireBaseEntry("Player${playerNumber}Name","NO_NAME")
+                if(playerPositions[pNum]!!.toInt() == IA().PlayersBoardPos[playerNumber]){
+                    FB("Player${playerNumber}Name","NO_NAME")
                     isHeroDead = true
                     val simpleAlert = AlertDialog.Builder(activity).create()
                     simpleAlert.setTitle("You were struck down")
@@ -196,25 +199,25 @@ class OnlineFragment : Fragment() {
                     fragmentManager.beginTransaction().replace(R.id.framelayout_main, MainFragment()).commit()
                 }
             }
-            (gridView_online.adapter as OnlineImageAdapter).notifyDataSetChanged()
+            IA().notifyDataSetChanged()
         }else{
             val myPosition = playerPositions[playerNumber]!!.toInt()
-            val otherPlayerLocations = (gridView_online.adapter as OnlineImageAdapter).PlayersBoardPos.filter { it.key != playerNumber }
+            val otherPlayerLocations = IA().PlayersBoardPos.filter { it.key != playerNumber }
             if (!(otherPlayerLocations.containsValue(playerPositions[pNum]?.toInt())&& playerTypes[playerNumber]=="MOVE")){
                 if(playerTypes[playerNumber] == "MOVE"){
-                    (gridView_online.adapter as OnlineImageAdapter).PutHeroToPosition(myPosition,playerNumber)
-                    SetFireBaseEntry("Player${playerNumber}Location", (gridView_online.adapter as OnlineImageAdapter).PlayersBoardPos[playerNumber].toString())
+                    IA().PutHeroToPosition(myPosition,playerNumber)
+                    FB("Player${playerNumber}Location", IA().PlayersBoardPos[playerNumber].toString())
                 }else if (playerTypes[playerNumber] == "ATTACK"){
-                    if((gridView_online.adapter as OnlineImageAdapter).PlayersBoardPos.containsValue(myPosition) ){
-                        (gridView_online.adapter as OnlineImageAdapter).PutHitToPosition(myPosition)
-                        (activity as MainActivity).currentPlayer.gold++
-                        (gridView_online.adapter as OnlineImageAdapter).PlayersBoardPos.remove((gridView_online.adapter as OnlineImageAdapter).PlayersBoardPos.filter { it.value == myPosition }.keys.first())
+                    if(IA().PlayersBoardPos.containsValue(myPosition) ){
+                        IA().PutHitToPosition(myPosition)
+                        CP().gold++
+                        IA().PlayersBoardPos.remove(IA().PlayersBoardPos.filter { it.value == myPosition }.keys.first())
                     }else{
-                        (gridView_online.adapter as OnlineImageAdapter).PutMissToPosition(myPosition)
-                        (gridView_online.adapter as OnlineImageAdapter).lastMiss = myPosition
+                        IA().PutMissToPosition(myPosition)
+                        IA().lastMiss = myPosition
                     }
                 }
-                (gridView_online.adapter as OnlineImageAdapter).notifyDataSetChanged()
+                IA().notifyDataSetChanged()
                 activeMarkers.clear()
             }
         }
@@ -244,31 +247,33 @@ class OnlineFragment : Fragment() {
         return result
     }
     fun SelectAbility(slot: Int){
-        val p = (activity as MainActivity).currentPlayer.equipped
-        (activity as MainActivity).currentPlayer.current_speed=p.get(slot)?.ability?.speed?:0
-        (gridView_online.adapter as OnlineImageAdapter).RemoveMarkers(activeMarkers)
+        val p = CP().equipped
+        CP().current_speed=p.get(slot)?.ability?.speed?:0
+        IA().RemoveMarkers(activeMarkers)
         activeAbilityType = p.get(slot)?.ability?.type?:""
-        (gridView_online.adapter as OnlineImageAdapter).PlaceMarkers(p.get(slot)?.ability?.relative_pairs?: listOf(),playerNumber)
-        (gridView_online.adapter as OnlineImageAdapter).notifyDataSetChanged()
-        activeMarkers = (gridView_online.adapter as OnlineImageAdapter).CalculatePairsFromRelative(p.get(slot)?.ability?.relative_pairs?: listOf(),playerNumber) as MutableList<Pair<Int, Int>>
+        IA().PlaceMarkers(p.get(slot)?.ability?.relative_pairs?: listOf(),playerNumber)
+        IA().notifyDataSetChanged()
+        activeMarkers = IA().CalculatePairsFromRelative(p.get(slot)?.ability?.relative_pairs?: listOf(),playerNumber) as MutableList<Pair<Int, Int>>
     }
     fun DecrementAllCooldowns(){
         for(v in cooldowns){
             val old = v.value
             if(old>0) cooldowns.put(v.key,old-1)
         }
-        val p = (activity as MainActivity).currentPlayer.equipped
+        val p = CP().equipped
         if(!(cooldowns[0]==0)){ button_head.setText("${p[0]?.name} (${cooldowns[0]})") }else button_head.setText(p[0]?.name)
         if(!(cooldowns[1]==0)){ button_shoulders.setText("${p[1]?.name} (${cooldowns[1]})") }else button_shoulders.setText(p[1]?.name)
         if(!(cooldowns[2]==0)){ button_legs.setText("${p[2]?.name} (${cooldowns[2]})") }else button_legs.setText(p[2]?.name)
         if(!(cooldowns[3]==0)){ button_offHand.setText("${p[3]?.name} (${cooldowns[3]})") }else button_offHand.setText(p[3]?.name)
         if(!(cooldowns[4]==0)){ button_mainHand.setText("${p[4]?.name} (${cooldowns[4]})") }else button_mainHand.setText(p[4]?.name)
     }
-    fun SetFireBaseEntry(key: String, value: String ){
+    fun FB(key: String, value: String ){
         mDatabase.child(key).setValue(value)
     }
     override fun onStop() {
         super.onStop()
-        SetFireBaseEntry("Player${playerNumber}Name","NO_NAME")
+        FB("Player${playerNumber}Name","NO_NAME")
     }
+    fun CP() = (activity as MainActivity).currentPlayer
+    fun IA() = (gridView_adventure.adapter as OnlineImageAdapter)
 }

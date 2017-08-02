@@ -27,9 +27,9 @@ class AdventureFragment : Fragment() {
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        (activity as MainActivity).currentPlayer.location = Pair(1,1)
+        CP().location = Pair(1,1)
 
-        val p = (activity as MainActivity).currentPlayer.equipped
+        val p = CP().equipped
 
         button_head.setText(p[0]?.name)
         button_shoulders.setText(p[1]?.name)
@@ -58,24 +58,24 @@ class AdventureFragment : Fragment() {
             SelectAbility(activeSlot)
         }
         button_wait.setOnClickListener {
-            (gridView_online.adapter as ImageAdapter).RemoveMarkers(activeMarkers)
-            (gridView_online.adapter as ImageAdapter).ActivateMonsters(true)
-            (gridView_online.adapter as ImageAdapter).ActivateMonsters(false)
-            (gridView_online.adapter as ImageAdapter).GenerateMonster()
-            (gridView_online.adapter as ImageAdapter).notifyDataSetChanged()
+            IA().RemoveMarkers(activeMarkers)
+            IA().ActivateMonsters(true)
+            IA().ActivateMonsters(false)
+            IA().GenerateMonster()
+            IA().notifyDataSetChanged()
             DecrementAllCooldowns()
             CheckDeath()
         }
 
-        gridView_online.adapter = ImageAdapter(context)
+        gridView_adventure.adapter = ImageAdapter(context)
 
-        gridView_online.setOnItemClickListener(object: AdapterView.OnItemClickListener{
+        gridView_adventure.setOnItemClickListener(object: AdapterView.OnItemClickListener{
             override fun onItemClick(parent: AdapterView<*>?, _view: View?, position: Int, id: Long) {
                 if(CheckCooldown(activeSlot)){
-                    if(activeMarkers.contains((gridView_online.adapter as ImageAdapter).CalculatePairFromPosition(position))){
-                        (gridView_online.adapter as ImageAdapter).RemoveMarkers(activeMarkers)
-                        (gridView_online.adapter as ImageAdapter).ActivateMonsters(true)
-                        (gridView_online.adapter as ImageAdapter).notifyDataSetChanged()
+                    if(activeMarkers.contains(IA().CalculatePairFromPosition(position))){
+                        IA().RemoveMarkers(activeMarkers)
+                        IA().ActivateMonsters(true)
+                        IA().notifyDataSetChanged()
 
                         cooldowns.put(activeSlot,p[activeSlot]?.cooldown?:0)
                         DecrementAllCooldowns()
@@ -86,7 +86,7 @@ class AdventureFragment : Fragment() {
             }
         })
 
-        (gridView_online.adapter as ImageAdapter).PutHero(listOf(Pair(5,5)))
+        IA().PutHero(listOf(Pair(5,5)))
 
         button_backFromAdventure.setOnClickListener {
             val simpleAlert = AlertDialog.Builder(activity).create()
@@ -101,22 +101,22 @@ class AdventureFragment : Fragment() {
         }
     }
     fun SelectAbility(slot: Int){
-        val p = (activity as MainActivity).currentPlayer.equipped
-        (activity as MainActivity).currentPlayer.current_speed=p.get(slot)?.ability?.speed?:0
-        (gridView_online.adapter as ImageAdapter).RemoveMarkers(activeMarkers)
+        val p = CP().equipped
+        CP().current_speed=p.get(slot)?.ability?.speed?:0
+        IA().RemoveMarkers(activeMarkers)
         activeAbilityType = p.get(slot)?.ability?.type?:""
-        (gridView_online.adapter as ImageAdapter).PlaceMarkers(p.get(slot)?.ability?.relative_pairs?: listOf())
-        (gridView_online.adapter as ImageAdapter).notifyDataSetChanged()
-        activeMarkers = (gridView_online.adapter as ImageAdapter).CalculatePairsFromRelative(p.get(slot)?.ability?.relative_pairs?: listOf()) as MutableList<Pair<Int, Int>>
+        IA().PlaceMarkers(p.get(slot)?.ability?.relative_pairs?: listOf())
+        IA().notifyDataSetChanged()
+        activeMarkers = IA().CalculatePairsFromRelative(p.get(slot)?.ability?.relative_pairs?: listOf()) as MutableList<Pair<Int, Int>>
     }
     fun HeroStage(position:Int){
         CheckDeath()
         if(activeAbilityType == "move"){
-            (gridView_online.adapter as ImageAdapter).PlaceHeroFromPosition(position)
+            IA().PlaceHeroFromPosition(position)
         }else if (activeAbilityType == "attack"){
-            (gridView_online.adapter as ImageAdapter).AttackFromPosition(position)
+            IA().AttackFromPosition(position)
         }
-        (gridView_online.adapter as ImageAdapter).notifyDataSetChanged()
+        IA().notifyDataSetChanged()
         activeMarkers.clear()
         if(!isHeroDead){
             CheckDeath()
@@ -124,16 +124,16 @@ class AdventureFragment : Fragment() {
     }
     fun SlowerStage(){
         if(!isHeroDead){
-            (gridView_online.adapter as ImageAdapter).ClearLastMiss()
-            (gridView_online.adapter as ImageAdapter).ActivateMonsters(false)
-            (gridView_online.adapter as ImageAdapter).GenerateMonster()
-            (gridView_online.adapter as ImageAdapter).notifyDataSetChanged()
+            IA().ClearLastMiss()
+            IA().ActivateMonsters(false)
+            IA().GenerateMonster()
+            IA().notifyDataSetChanged()
             CheckDeath()
 
         }
     }
     fun CheckDeath(){
-        if((gridView_online.adapter as ImageAdapter).CheckPlayerDeath()){
+        if(IA().CheckPlayerDeath()){
             isHeroDead = true
             val simpleAlert = AlertDialog.Builder(activity).create()
             simpleAlert.setTitle("You were struck down")
@@ -157,7 +157,7 @@ class AdventureFragment : Fragment() {
                 cooldowns.put(v.key,old-1)
             }
         }
-        val p = (activity as MainActivity).currentPlayer.equipped
+        val p = CP().equipped
         if(!(cooldowns[0]==0)){
             button_head.setText("${p[0]?.name} (${cooldowns[0]})")
         }else button_head.setText(p[0]?.name)
@@ -174,4 +174,6 @@ class AdventureFragment : Fragment() {
             button_mainHand.setText("${p[4]?.name} (${cooldowns[4]})")
         }else button_mainHand.setText(p[4]?.name)
     }
+    fun CP() = (activity as MainActivity).currentPlayer
+    fun IA() = (gridView_adventure.adapter as ImageAdapter)
 }
