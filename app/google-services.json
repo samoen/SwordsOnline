@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "167313973432",
+    "firebase_url": "https://swordsonline-33600.firebaseio.com",
+    "project_id": "swordsonline-33600",
+    "storage_bucket": "swordsonline-33600.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:167313973432:android:a9c05420ce0c8288",
+        "android_client_info": {
+          "package_name": "sam.swordsonline"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "167313973432-1srrae986pg1ijuft841u1d1rtdudo8k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "sam.swordsonline",
+            "certificate_hash": "d3277f45fd5a7407003cced4ac876b2a05058f62"
+          }
+        },
+        {
+          "client_id": "167313973432-aub9dutvkg3aiad3k99v8mu46f6rnkf1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbS0kytpEvL_bI5r80zNHiEYYOW9xr8mc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "167313973432-aub9dutvkg3aiad3k99v8mu46f6rnkf1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
