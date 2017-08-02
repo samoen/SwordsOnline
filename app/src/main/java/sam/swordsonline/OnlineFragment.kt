@@ -27,27 +27,25 @@ class OnlineFragment : Fragment() {
     var playerPositions : MutableMap<Int,String> = mutableMapOf()
     var playerLocations : MutableMap<Int,String> = mutableMapOf()
 
-
     lateinit var mDatabase: DatabaseReference
 
-    var firstDatabaseRead = true
-    var secondDatabaseRead = false
     var activeMarkers: MutableList<Pair<Int,Int>> = mutableListOf()
     var activeAbilityType: String = ""
+    var firstDatabaseRead = true
     var isHeroDead: Boolean = false
     var activeSlot = 0
     var cooldowns = mutableMapOf<Int,Int>(0 to 0, 1 to 0, 2 to 0,3 to 0,4 to 0)
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         gridView_adventure.adapter = OnlineImageAdapter(context)
 
-        val p = CP().equipped
-        button_head.setText(p[0]?.name)
-        button_shoulders.setText(p[1]?.name)
-        button_legs.setText(p[2]?.name)
-        button_offHand.setText(p[3]?.name)
-        button_mainHand.setText(p[4]?.name)
+        button_head.setText(CP().equipped[0]?.name)
+        button_shoulders.setText(CP().equipped[1]?.name)
+        button_legs.setText(CP().equipped[2]?.name)
+        button_offHand.setText(CP().equipped[3]?.name)
+        button_mainHand.setText(CP().equipped[4]?.name)
 
         mDatabase =  FirebaseDatabase.getInstance().getReference("GameRoom1")
         mDatabase.addValueEventListener(object : ValueEventListener {
@@ -71,8 +69,10 @@ class OnlineFragment : Fragment() {
                             fragmentManager.beginTransaction().replace(R.id.framelayout_main, MainFragment()).commit()
                         }
                     }
-                    IA().PutHeroToPosition(playerNumber+3,playerNumber)
-                    IA().notifyDataSetChanged()
+
+                    if(!playerLocations.containsValue( ((playerNumber+1)*2).toString() )){
+                        IA().PutHeroToPosition( (playerNumber+1)*2, playerNumber )
+                    }
 
                     for (i in playerLocations){
                         if (i.key != playerNumber && playerNames[i.key]!="NO_NAME"){
@@ -80,10 +80,13 @@ class OnlineFragment : Fragment() {
                         }
                     }
 
+                    IA().notifyDataSetChanged()
+
                     FB("Player${playerNumber}Ready","NOT_READY")
                     FB("Player${playerNumber}Location", IA().PlayersBoardPos[playerNumber].toString())
+
                     firstDatabaseRead = false
-                    secondDatabaseRead = true
+
                 }else if(this@OnlineFragment.activity != null) {
                     for (i in 0..MAX_PLAYERS_MINUS_ONE){
                         if(i != playerNumber){
@@ -92,11 +95,13 @@ class OnlineFragment : Fragment() {
                                 IA().PlayersBoardPos.remove(i)
                             }
                             if (playerNames[i] != "NO_NAME" && !IA().PlayersBoardPos.containsKey(i)){
-                                IA(). PutEnemyToPosition( playerLocations[i]?.toInt()?:0,i)
+                                IA().PutEnemyToPosition( playerLocations[i]?.toInt()?:0,i)
                                 IA().PlayersBoardPos.put(i,playerLocations[i]?.toInt()?:0)
                             }
                         }
                     }
+                    IA().notifyDataSetChanged()
+
                     if(playerReadies[playerNumber]=="READY" && CheckOtherPlayersReadyOrWaitingOrNoName()){
                         IA().RemoveMarkers(activeMarkers)
                         if (activeSlot != 5){
