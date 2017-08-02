@@ -1,5 +1,9 @@
 package sam.swordsonline
 
+import android.app.Activity
+import android.content.Context
+import android.view.inputmethod.InputMethodManager
+
 /**
  * Created by Sam on 1/08/2017.
  */
@@ -67,4 +71,8 @@ fun CalculatePositionFromPair(pair: Pair<Int,Int>):Int {
         10->return 109-(pair.second*10)
     }
     return 0
+}
+fun Activity.hideKeyboard() {
+    val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    imm.hideSoftInputFromWindow(findViewById(android.R.id.content).getWindowToken(), 0);
 }

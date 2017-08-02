@@ -206,7 +206,7 @@ class OnlineFragment : Fragment() {
             }
             IA().notifyDataSetChanged()
         }else{
-            val myPosition = playerPositions[playerNumber]!!.toInt()
+            val myPosition = playerPositions[playerNumber]?.toInt()?:0
             val otherPlayerLocations = IA().PlayersBoardPos.filter { it.key != playerNumber }
             if (!(otherPlayerLocations.containsValue(playerPositions[pNum]?.toInt())&& playerTypes[playerNumber]=="MOVE")){
                 if(playerTypes[playerNumber] == "MOVE"){

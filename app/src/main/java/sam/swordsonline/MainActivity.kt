@@ -60,6 +60,7 @@ class MainActivity : AppCompatActivity() {
             }
             currentPlayer.items = startingItems
             currentPlayer.equipped = startingEquippedItems
+            this.hideKeyboard()
             GoToMainFragment()
         }
         button_continueAdventure.setOnClickListener {
