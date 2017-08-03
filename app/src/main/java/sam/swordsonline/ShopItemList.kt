@@ -78,7 +78,7 @@ object ShopItemList {
                     name = "knight shield",
                     stat_requirement = StatRequirement(5..10,2..6,2..6),
                     equipment_slot = 3,
-                    ability = Ability("attack", listOf(Pair(0,2),Pair(0,3),Pair(1,2),Pair(-1,2)),5),
+                    ability = Ability("attack", listOf(Pair(0,1),Pair(1,1),Pair(-1,0),Pair(1,0),Pair(-1,1)),5),
                     cooldown = 2,
                     price = 2
             ),
@@ -102,7 +102,7 @@ object ShopItemList {
                     name = "chainmail",
                     stat_requirement = StatRequirement(5..8,2..6,2..6),
                     equipment_slot = 1,
-                    ability = Ability("move", listOf(Pair(-1,-1),Pair(-1,-2),Pair(1,2),Pair(-3,1)),2),
+                    ability = Ability("move", listOf(Pair(-1,-1),Pair(-1,-2),Pair(1,2),Pair(-3,1),Pair(1,1),Pair(3,1)),2),
                     cooldown = 3,
                     price = 7
             )
