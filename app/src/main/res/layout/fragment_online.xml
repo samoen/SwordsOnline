@@ -4,6 +4,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <Button
+        android:id="@+id/button_backFromAdventure"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dip"
+        android:text="@string/leave_battle" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,19 +21,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Button" />
+            android:text="" />
 
         <Button
             android:id="@+id/button_head"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Button" />
+            android:text="" />
 
         <Button
             android:id="@+id/button_wait"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Wait" />
+            android:text="@string/wait" />
     </LinearLayout>
 
     <LinearLayout
@@ -38,28 +45,21 @@
             android:id="@+id/button_mainHand"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Button" />
+            android:text="" />
 
         <Button
             android:id="@+id/button_offHand"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Button" />
+            android:text="" />
 
         <Button
             android:id="@+id/button_legs"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Button" />
+            android:text="" />
 
     </LinearLayout>
-
-    <Button
-        android:id="@+id/button_backFromAdventure"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dip"
-        android:text="Leave Adventure" />
 
     <GridView
         android:id="@+id/gridView_adventure"

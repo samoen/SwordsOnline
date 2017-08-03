@@ -20,6 +20,7 @@ class OnlineFragment : Fragment() {
     }
 
     val MAX_PLAYERS_MINUS_ONE = 2
+    val PLAYER_KILL_REWARD = 5
     var playerNumber = 0
     var playerReadies : MutableMap<Int,String> = mutableMapOf()
     var playerNames : MutableMap<Int,String> = mutableMapOf()
@@ -30,7 +31,7 @@ class OnlineFragment : Fragment() {
     var activeMarkers: MutableList<Pair<Int,Int>> = mutableListOf()
     var activeAbilityType: String = ""
     var firstDatabaseRead = true
-    var isHeroDead: Boolean = false
+    var isHeroDead: MutableMap<Int,Boolean> = mutableMapOf()
     var activeSlot = 0
     var cooldowns = mutableMapOf<Int,Int>(0 to 0, 1 to 0, 2 to 0,3 to 0,4 to 0)
     var mDatabase: DatabaseReference? = null
@@ -66,7 +67,7 @@ class OnlineFragment : Fragment() {
                     if(firstDatabaseRead){
                         for(i in 0..MAX_PLAYERS_MINUS_ONE){
                             if (playerNames[i]=="NO_NAME"){
-                                val startpos = (i+1)*3
+                                val startpos = 99-((i+1)*3)
                                 playerNumber = i
                                 FB("Player${i}Location", startpos.toString())
                                 FB("Player${i}Ready","NOT_READY")
@@ -92,7 +93,7 @@ class OnlineFragment : Fragment() {
 
                         val activePlayerNames = playerNames.filter { it.value != "NO_NAME" }
                         val activePlayerSpeeds = playerSpeeds.filter { activePlayerNames.containsKey(it.key) }
-                        val speedSortedPlayerNumbers = activePlayerSpeeds.toList().sortedBy { (k, v) -> v }.toMap()
+                        val speedSortedPlayerNumbers = activePlayerSpeeds.toList().sortedBy { (_, v) -> v }.toMap()
 
                         val mpos = playerPositions
                         val mtyp = playerTypes
@@ -199,9 +200,9 @@ class OnlineFragment : Fragment() {
 
         button_backFromAdventure.setOnClickListener {
             val simpleAlert = AlertDialog.Builder(activity).create()
-            simpleAlert.setTitle("Leave Adventure")
-            simpleAlert.setMessage("Do you really want to leave this adventure?")
-            simpleAlert.setButton(AlertDialog.BUTTON_POSITIVE, "OK", object : DialogInterface.OnClickListener{
+            simpleAlert.setTitle(getString(R.string.leave_battle))
+            simpleAlert.setMessage(getString(R.string.want_to_leave_battle))
+            simpleAlert.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.leave_battle), object : DialogInterface.OnClickListener{
                 override fun onClick(dialog: DialogInterface?, which: Int) {
                     FB("Player${playerNumber}Name","NO_NAME")
                     fragmentManager.beginTransaction().replace(R.id.framelayout_main, MainFragment()).commitAllowingStateLoss()
@@ -212,7 +213,7 @@ class OnlineFragment : Fragment() {
     }
 
     fun ActivateHero(pNum:Int,pos:Int?,type:String?){
-        if(this@OnlineFragment.activity != null){
+        if(this@OnlineFragment.activity != null && isHeroDead[pNum] != true){
             IA().ClearLastMiss()
             IA().notifyDataSetChanged()
             var illegalMovement = false
@@ -220,7 +221,7 @@ class OnlineFragment : Fragment() {
                 if (i != pNum){
                     if (IA().PlayersBoardPos[i] == pos && type == "MOVE"){
                         illegalMovement = true
-                        Toast.makeText(context,"Illegal Movement",Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context,getString(R.string.move_blocked),Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -233,14 +234,15 @@ class OnlineFragment : Fragment() {
                     if (type=="ATTACK"){
                         if(pos == IA().PlayersBoardPos[playerNumber]){
                             FB("Player${playerNumber}Name","NO_NAME")
-                            isHeroDead = true
+                            isHeroDead[playerNumber] = true
                             val simpleAlert = AlertDialog.Builder(activity).create()
-                            simpleAlert.setTitle("You were struck down")
-                            simpleAlert.setMessage("You fell in battle, but recovered eventually..")
-                            simpleAlert.setButton(AlertDialog.BUTTON_POSITIVE, "OK", object : DialogInterface.OnClickListener{
+                            simpleAlert.setTitle(getString(R.string.struck_down))
+                            simpleAlert.setMessage(getString(R.string.you_survive))
+                            simpleAlert.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.ok), object : DialogInterface.OnClickListener{
                                 override fun onClick(dialog: DialogInterface?, which: Int) {}
                             })
                             simpleAlert.show()
+                            CP().gold = CP().gold - PLAYER_KILL_REWARD
                             fragmentManager.beginTransaction().replace(R.id.framelayout_main, MainFragment()).commit()
                         }
                     } else if (IA().PlayersBoardPos.containsKey(pNum)){
@@ -248,8 +250,9 @@ class OnlineFragment : Fragment() {
                     }
                 }else if (pNum == playerNumber){
                     if (type == "ATTACK" && IA().PlayersBoardPos.containsValue(pos)){
+                        isHeroDead[IA().PlayersBoardPos.filter{ it.value == pos }.keys.first()] = true
                         IA().PutHitToPosition(pos?:0)
-                        CP().gold++
+                        CP().gold = CP().gold + PLAYER_KILL_REWARD
                     }else if(type == "MOVE"){
                         IA().PutHeroToPosition(pos?:0,pNum)
                         FB("Player${pNum}Location", IA().PlayersBoardPos[pNum].toString())
@@ -262,24 +265,22 @@ class OnlineFragment : Fragment() {
 
     fun SelectAbility(slot: Int){
         IA().RemoveMarkers(activeMarkers,playerNumber)
-        val p = CP().equipped
-        CP().current_speed=p.get(slot)?.ability?.speed?:0
-        activeAbilityType = p.get(slot)?.ability?.type?:""
-        IA().PlaceMarkers(p.get(slot)?.ability?.relative_pairs?: listOf(),playerNumber)
+        CP().current_speed=CP().equipped.get(slot)?.ability?.speed?:0
+        activeAbilityType = CP().equipped.get(slot)?.ability?.type?:""
+        IA().PlaceMarkers(CP().equipped.get(slot)?.ability?.relative_pairs?: listOf(),playerNumber)
         IA().notifyDataSetChanged()
-        activeMarkers = IA().CalculatePairsFromRelative(p.get(slot)?.ability?.relative_pairs?: listOf(),playerNumber) as MutableList<Pair<Int, Int>>
+        activeMarkers = IA().CalculatePairsFromRelative(CP().equipped.get(slot)?.ability?.relative_pairs?: listOf(),playerNumber) as MutableList<Pair<Int, Int>>
     }
     fun DecrementAllCooldowns(){
         for(v in cooldowns){
             val old = v.value
             if(old>0) cooldowns.put(v.key,old-1)
         }
-        val p = CP().equipped
-        if(!(cooldowns[0]==0)){ button_head.setText("${p[0]?.name} (${cooldowns[0]})") }else button_head.setText(p[0]?.name)
-        if(!(cooldowns[1]==0)){ button_shoulders.setText("${p[1]?.name} (${cooldowns[1]})") }else button_shoulders.setText(p[1]?.name)
-        if(!(cooldowns[2]==0)){ button_legs.setText("${p[2]?.name} (${cooldowns[2]})") }else button_legs.setText(p[2]?.name)
-        if(!(cooldowns[3]==0)){ button_offHand.setText("${p[3]?.name} (${cooldowns[3]})") }else button_offHand.setText(p[3]?.name)
-        if(!(cooldowns[4]==0)){ button_mainHand.setText("${p[4]?.name} (${cooldowns[4]})") }else button_mainHand.setText(p[4]?.name)
+        if(!(cooldowns[0]==0)){ button_head.setText("${CP().equipped[0]?.name} (${cooldowns[0]})") }else button_head.setText(CP().equipped[0]?.name)
+        if(!(cooldowns[1]==0)){ button_shoulders.setText("${CP().equipped[1]?.name} (${cooldowns[1]})") }else button_shoulders.setText(CP().equipped[1]?.name)
+        if(!(cooldowns[2]==0)){ button_legs.setText("${CP().equipped[2]?.name} (${cooldowns[2]})") }else button_legs.setText(CP().equipped[2]?.name)
+        if(!(cooldowns[3]==0)){ button_offHand.setText("${CP().equipped[3]?.name} (${cooldowns[3]})") }else button_offHand.setText(CP().equipped[3]?.name)
+        if(!(cooldowns[4]==0)){ button_mainHand.setText("${CP().equipped[4]?.name} (${cooldowns[4]})") }else button_mainHand.setText(CP().equipped[4]?.name)
     }
     fun FB(key: String, value: String ){
         mDatabase?.child(key)?.setValue(value)

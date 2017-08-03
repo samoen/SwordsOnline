@@ -10,25 +10,32 @@
         android:orientation="horizontal">
 
         <Button
+            android:id="@+id/button_game_room_1"
+            android:layout_width="wrap_content"
+            android:layout_height="50dip"
+            android:layout_weight="1"
+            android:text="@string/pvp" />
+
+        <Button
             android:id="@+id/button_adventure"
             android:layout_width="wrap_content"
             android:layout_height="50dip"
             android:layout_weight="1"
-            android:text="Battle" />
+            android:text= "@string/solo" />
 
         <Button
             android:id="@+id/button_respec"
             android:layout_width="wrap_content"
             android:layout_height="50dip"
             android:layout_weight="1"
-            android:text="Respec" />
+            android:text="@string/respec" />
 
         <Button
             android:id="@+id/button_itemShop"
             android:layout_width="wrap_content"
             android:layout_height="50dp"
             android:layout_weight="1"
-            android:text="Shop"
+            android:text="@string/shop"
             android:textSize="14sp" />
 
         <Button
@@ -36,14 +43,8 @@
             android:layout_width="wrap_content"
             android:layout_height="50dp"
             android:layout_weight="1"
-            android:text="Save" />
+            android:text="@string/save" />
     </LinearLayout>
-
-    <Button
-        android:id="@+id/button_game_room_1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="go to game room 1" />
 
     <TextView
         android:id="@+id/textView_playerInfo"
@@ -72,7 +73,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="0"
-            android:text="Equipped Items"
+            android:text="@string/equipped_items"
             android:textSize="18sp"
             android:textStyle="bold" />
 

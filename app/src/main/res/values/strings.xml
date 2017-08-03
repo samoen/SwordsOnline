@@ -1,4 +1,17 @@
 <resources>
     <string name="app_name">SwordsOnline</string>
     <string name="list_loading">Loading..</string>
+    <string name="leave_battle">Leave Battle</string>
+    <string name="want_to_leave_battle">Do you really want to leave the battle?</string>
+    <string name="struck_down">Struck Down</string>
+    <string name="you_survive">You were struck down in battle. You survive and recover eventually..</string>
+    <string name="move_blocked">Movement Blocked!</string>
+    <string name="ok">OK</string>
+    <string name="save">Save</string>
+    <string name="solo">Solo</string>
+    <string name="pvp">PVP</string>
+    <string name="respec">Respec</string>
+    <string name="shop">Shop</string>
+    <string name="equipped_items">Equipped Items</string>
+    <string name="wait">Wait</string>
 </resources>
