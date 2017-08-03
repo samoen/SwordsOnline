@@ -89,36 +89,42 @@ class OnlineFragment : Fragment() {
                         IA().notifyDataSetChanged()
 
                     }else if(!firstDatabaseRead){
+
+                        val activePlayerNames = playerNames.filter { it.value != "NO_NAME" }
+                        val activePlayerSpeeds = playerSpeeds.filter { activePlayerNames.containsKey(it.key) }
+                        val speedSortedPlayerNumbers = activePlayerSpeeds.toList().sortedBy { (k, v) -> v }.toMap()
+
+                        val mpos = playerPositions
+                        val mtyp = playerTypes
+
                         if(playerReadies[playerNumber]=="READY"){
-                            var result = true
+                            var otherPlayersReadyOrWaiting = true
                             for(v in 0..MAX_PLAYERS_MINUS_ONE){
-                                if(v == playerNumber){
-                                    continue
-                                }else if (playerReadies[v] != "WAITING" && playerReadies[v] != "READY" && playerNames[v]!="NO_NAME"){
-                                    result = false
+                                if(v != playerNumber && playerReadies[v] != "WAITING" && playerReadies[v] != "READY" && playerNames[v]!="NO_NAME"){
+                                    otherPlayersReadyOrWaiting = false
                                 }
                             }
-                            if(result){
+                            if(otherPlayersReadyOrWaiting){
                                 if (activeSlot != 5){
                                     cooldowns.put(activeSlot,CP().equipped[activeSlot]?.cooldown?:0)
                                 }
                                 DecrementAllCooldowns()
-                                val speedorder = playerSpeeds.values.sortedDescending()
-                                var activePlayers = 0
-                                for (v in speedorder.withIndex()){
-                                    Handler().postDelayed( {ActivateHero(v.value.toInt(),playerPositions[v.value.toInt()]?.toInt(),playerTypes[v.value.toInt()])},300*v.index.toLong() )
-                                    activePlayers++
+                                var inc = 0
+                                for (v in speedSortedPlayerNumbers){
+                                    Handler().postDelayed( {ActivateHero(v.key,mpos[v.key]?.toInt(),mtyp[v.key])},300*inc.toLong() )
+                                    inc++
                                 }
-                                Handler().postDelayed({ClickableButtons(true)},300*activePlayers.toLong())
+                                Toast.makeText(context,"Speedsorted playernums${speedSortedPlayerNumbers}",Toast.LENGTH_SHORT).show()
+                                Handler().postDelayed({ClickableButtons(true)},300*activePlayerNames.size.toLong())
                                 FB("Player${playerNumber}Ready","WAITING")
                             }
 
                         }else if (playerReadies[playerNumber]=="WAITING"){
                             var result = true
                             for(v in 0..MAX_PLAYERS_MINUS_ONE){
-                                if(v == playerNumber) { continue }
-                                else if(playerNames[v]=="NO_NAME"){ continue }
-                                else if (playerReadies[v] != "WAITING" && playerReadies[v]!="NOT_READY" && playerNames[v]!="NO_NAME"){ result = false }
+                                if(v != playerNumber && playerReadies[v] != "WAITING" && playerReadies[v]!="NOT_READY" && playerNames[v]!="NO_NAME"){
+                                    result = false
+                                }
                             }
                             if (result){
                                 FB("Player${playerNumber}Ready","NOT_READY")
@@ -213,7 +219,10 @@ class OnlineFragment : Fragment() {
             var illegalMovement = false
             for (i in 0..MAX_PLAYERS_MINUS_ONE){
                 if (i != pNum){
-                    if (IA().PlayersBoardPos[i] == pos && type == "MOVE") illegalMovement = true
+                    if (IA().PlayersBoardPos[i] == pos && type == "MOVE"){
+                        illegalMovement = true
+                        Toast.makeText(context,"illegal movement",Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
             if (!illegalMovement){
