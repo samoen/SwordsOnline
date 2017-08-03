@@ -114,7 +114,6 @@ class OnlineFragment : Fragment() {
                                     Handler().postDelayed( {ActivateHero(v.key,mpos[v.key]?.toInt(),mtyp[v.key])},300*inc.toLong() )
                                     inc++
                                 }
-                                Toast.makeText(context,"Speedsorted playernums${speedSortedPlayerNumbers}",Toast.LENGTH_SHORT).show()
                                 Handler().postDelayed({ClickableButtons(true)},300*activePlayerNames.size.toLong())
                                 FB("Player${playerNumber}Ready","WAITING")
                             }
@@ -221,11 +220,15 @@ class OnlineFragment : Fragment() {
                 if (i != pNum){
                     if (IA().PlayersBoardPos[i] == pos && type == "MOVE"){
                         illegalMovement = true
-                        Toast.makeText(context,"illegal movement",Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context,"Illegal Movement",Toast.LENGTH_SHORT).show()
                     }
                 }
             }
-            if (!illegalMovement){
+
+            if (!IA().PlayersBoardPos.containsValue(pos) && type == "ATTACK"){
+                IA().PutMissToPosition(pos?:0)
+                IA().lastMiss = pos
+            } else if (!illegalMovement){
                 if (pNum != playerNumber){
                     if (type=="ATTACK"){
                         if(pos == IA().PlayersBoardPos[playerNumber]){
@@ -244,15 +247,10 @@ class OnlineFragment : Fragment() {
                         IA().PutEnemyToPosition(pos?:0,pNum)
                     }
                 }else if (pNum == playerNumber){
-                    if (type == "ATTACK"){
-                        if(IA().PlayersBoardPos.containsValue(pos) ){
-                            IA().PutHitToPosition(pos?:0)
-                            CP().gold++
-                        }else{
-                            IA().PutMissToPosition(pos?:0)
-                            IA().lastMiss = pos
-                        }
-                    }else{
+                    if (type == "ATTACK" && IA().PlayersBoardPos.containsValue(pos)){
+                        IA().PutHitToPosition(pos?:0)
+                        CP().gold++
+                    }else if(type == "MOVE"){
                         IA().PutHeroToPosition(pos?:0,pNum)
                         FB("Player${pNum}Location", IA().PlayersBoardPos[pNum].toString())
                     }
