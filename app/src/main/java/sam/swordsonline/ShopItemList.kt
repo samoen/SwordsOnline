@@ -6,7 +6,7 @@ object ShopItemList {
                     name = "rusty helmet",
                     stat_requirement = StatRequirement(strength_range = 3..7,dexterity_range = 2..6,intelligence_range = 2..6),
                     equipment_slot = 0,
-                    ability = Ability(type = "move", relative_pairs = listOf(Pair(0,1),Pair(1,0), Pair(-1,0),Pair(1,-1),Pair(-1,-1)),speed = 2),
+                    ability = Ability(type = "move", relative_pairs = listOf(Pair(0,1),Pair(1,0), Pair(-1,0),Pair(1,-1),Pair(-1,-1)),speed = 1),
                     price = 0,
                     cooldown = 3
             ),
@@ -14,7 +14,7 @@ object ShopItemList {
                     name = "tattered clothes",
                     stat_requirement = StatRequirement(3..8,2..6,2..6),
                     equipment_slot = 1,
-                    ability = Ability(type = "move", relative_pairs = listOf(Pair(2,0), Pair(-2,0)),speed = 3),
+                    ability = Ability(type = "move", relative_pairs = listOf(Pair(2,0), Pair(-2,0)),speed = 2),
                     cooldown = 2,
                     price = 0
             ),

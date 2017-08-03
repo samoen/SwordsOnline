@@ -14,4 +14,6 @@
     <string name="shop">Shop</string>
     <string name="equipped_items">Equipped Items</string>
     <string name="wait">Wait</string>
+    <string name="joined">joined the battle</string>
+    <string name="left">A hero left the battle</string>
 </resources>

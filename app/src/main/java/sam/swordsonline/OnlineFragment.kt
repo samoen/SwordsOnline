@@ -93,7 +93,7 @@ class OnlineFragment : Fragment() {
 
                         val activePlayerNames = playerNames.filter { it.value != "NO_NAME" }
                         val activePlayerSpeeds = playerSpeeds.filter { activePlayerNames.containsKey(it.key) }
-                        val speedSortedPlayerNumbers = activePlayerSpeeds.toList().sortedBy { (_, v) -> v }.toMap()
+                        val speedSortedPlayerNumbers = activePlayerSpeeds.toList().sortedByDescending { (_, v) -> v }.toMap()
 
                         val mpos = playerPositions
                         val mtyp = playerTypes
@@ -134,11 +134,13 @@ class OnlineFragment : Fragment() {
                             for (i in 0..MAX_PLAYERS_MINUS_ONE){
                                 if(i != playerNumber){
                                     if(playerNames[i] == "NO_NAME" && IA().PlayersBoardPos.containsKey(i)){
+                                        Toast.makeText(context,getString(R.string.left),Toast.LENGTH_SHORT).show()
                                         IA().PutEmptyAtPosition( IA().PlayersBoardPos[i] )
                                         IA().PlayersBoardPos.remove(i)
                                         IA().notifyDataSetChanged()
                                     }
-                                    if (playerNames[i] != "NO_NAME" && (!IA().PlayersBoardPos.containsKey(i) || IA().PlayersBoardPos[i] != playerLocations[i]?.toInt())){
+                                    if (playerNames[i] != "NO_NAME" && !IA().PlayersBoardPos.containsKey(i)){
+                                        Toast.makeText(context,"${playerNames[i]} ${getString(R.string.joined)}",Toast.LENGTH_SHORT).show()
                                         IA().PutEnemyToPosition( playerLocations[i]?.toInt()?:0,i)
                                         IA().PlayersBoardPos.put(i,playerLocations[i]?.toInt()?:0)
                                         IA().notifyDataSetChanged()
