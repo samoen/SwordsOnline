@@ -1,6 +1,7 @@
 package sam.swordsonline
 
 import android.app.Fragment
+import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.os.Handler
@@ -26,20 +27,23 @@ class OnlineFragment : Fragment() {
     var playerSpeeds : MutableMap<Int,String> = mutableMapOf()
     var playerPositions : MutableMap<Int,String> = mutableMapOf()
     var playerLocations : MutableMap<Int,String> = mutableMapOf()
-
-    lateinit var mDatabase: DatabaseReference
-
     var activeMarkers: MutableList<Pair<Int,Int>> = mutableListOf()
     var activeAbilityType: String = ""
     var firstDatabaseRead = true
     var isHeroDead: Boolean = false
     var activeSlot = 0
     var cooldowns = mutableMapOf<Int,Int>(0 to 0, 1 to 0, 2 to 0,3 to 0,4 to 0)
+    var mDatabase: DatabaseReference? = null
+    var mProgressDialog: ProgressDialog? = null
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        gridView_adventure.adapter = OnlineImageAdapter(context)
+        showProgressDialog()
+
+        ClickableButtons(false)
+
+        gridView_adventure.adapter = OnlineImageAdapter(activity)
 
         button_head.setText(CP().equipped[0]?.name)
         button_shoulders.setText(CP().equipped[1]?.name)
@@ -48,76 +52,94 @@ class OnlineFragment : Fragment() {
         button_mainHand.setText(CP().equipped[4]?.name)
 
         mDatabase =  FirebaseDatabase.getInstance().getReference("GameRoom1")
-        mDatabase.addValueEventListener(object : ValueEventListener {
+        mDatabase?.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                for(i in 0..MAX_PLAYERS_MINUS_ONE){
-                    playerReadies.put(i, dataSnapshot.child("Player${i}Ready").getValue(String::class.java).toString())
-                    playerNames.put(i, dataSnapshot.child("Player${i}Name").getValue(String::class.java).toString())
-                    playerPositions.put(i, dataSnapshot.child("Player${i}Position").getValue(String::class.java).toString())
-                    playerSpeeds.put(i, dataSnapshot.child("Player${i}Speed").getValue(String::class.java).toString())
-                    playerTypes.put(i, dataSnapshot.child("Player${i}Type").getValue(String::class.java).toString())
-                    playerLocations.put(i, dataSnapshot.child("Player${i}Location").getValue(String::class.java).toString())
-                }
-                if(firstDatabaseRead){
+                if(this@OnlineFragment.activity != null){
                     for(i in 0..MAX_PLAYERS_MINUS_ONE){
-                        if (playerNames[i]=="NO_NAME"){
-                            playerNumber = i
-                            FB("Player${i}Name",CP().name)
-                            break
-                        }else if (i == MAX_PLAYERS_MINUS_ONE){
-                            Toast.makeText(context,"Game Room 1 Full",Toast.LENGTH_SHORT).show()
-                            fragmentManager.beginTransaction().replace(R.id.framelayout_main, MainFragment()).commit()
-                        }
+                        playerReadies.put(i, dataSnapshot.child("Player${i}Ready").getValue(String::class.java).toString())
+                        playerNames.put(i, dataSnapshot.child("Player${i}Name").getValue(String::class.java).toString())
+                        playerPositions.put(i, dataSnapshot.child("Player${i}Position").getValue(String::class.java).toString())
+                        playerSpeeds.put(i, dataSnapshot.child("Player${i}Speed").getValue(String::class.java).toString())
+                        playerTypes.put(i, dataSnapshot.child("Player${i}Type").getValue(String::class.java).toString())
+                        playerLocations.put(i, dataSnapshot.child("Player${i}Location").getValue(String::class.java).toString())
                     }
-
-                    if(!playerLocations.containsValue( ((playerNumber+1)*2).toString() )){
-                        IA().PutHeroToPosition( (playerNumber+1)*2, playerNumber )
-                    }
-
-                    for (i in playerLocations){
-                        if (i.key != playerNumber && playerNames[i.key]!="NO_NAME"){
-                            IA().PutEnemyToPosition(i.value.toInt(),i.key)
-                        }
-                    }
-
-                    IA().notifyDataSetChanged()
-
-                    FB("Player${playerNumber}Ready","NOT_READY")
-                    FB("Player${playerNumber}Location", IA().PlayersBoardPos[playerNumber].toString())
-
-                    firstDatabaseRead = false
-
-                }else if(this@OnlineFragment.activity != null) {
-                    for (i in 0..MAX_PLAYERS_MINUS_ONE){
-                        if(i != playerNumber){
-                            if(playerNames[i] == "NO_NAME" && IA().PlayersBoardPos.containsKey(i)){
-                                IA().PutEmptyAtPosition( IA().PlayersBoardPos[i] )
-                                IA().PlayersBoardPos.remove(i)
-                            }
-                            if (playerNames[i] != "NO_NAME" && !IA().PlayersBoardPos.containsKey(i)){
-                                IA().PutEnemyToPosition( playerLocations[i]?.toInt()?:0,i)
-                                IA().PlayersBoardPos.put(i,playerLocations[i]?.toInt()?:0)
+                    if(firstDatabaseRead){
+                        for(i in 0..MAX_PLAYERS_MINUS_ONE){
+                            if (playerNames[i]=="NO_NAME"){
+                                val startpos = (i+1)*3
+                                playerNumber = i
+                                FB("Player${i}Location", startpos.toString())
+                                FB("Player${i}Ready","NOT_READY")
+                                FB("Player${i}Name",CP().name)
+                                IA().PutHeroToPosition(startpos,i)
+                                break
+                            }else if (i == MAX_PLAYERS_MINUS_ONE){
+                                Toast.makeText(context,"Game Room 1 Full",Toast.LENGTH_SHORT).show()
+                                fragmentManager.beginTransaction().replace(R.id.framelayout_main, MainFragment()).commit()
                             }
                         }
-                    }
-                    IA().notifyDataSetChanged()
-
-                    if(playerReadies[playerNumber]=="READY" && CheckOtherPlayersReadyOrWaitingOrNoName()){
-                        IA().RemoveMarkers(activeMarkers)
-                        if (activeSlot != 5){
-                            cooldowns.put(activeSlot,CP().equipped[activeSlot]?.cooldown?:0)
+                        for (i in playerLocations){
+                            if (i.key != playerNumber && playerNames[i.key]!="NO_NAME"){
+                                IA().PutEnemyToPosition(i.value.toInt(),i.key)
+                            }
                         }
-                        DecrementAllCooldowns()
-                        val speedorder = playerSpeeds.values.sortedDescending()
-                        var i = 1
-                        for (v in speedorder){
-                            Handler().postDelayed( {ActivateHero(v.toInt())},300*i.toLong() )
-                            i++
-                        }
-                        FB("Player${playerNumber}Ready","WAITING")
+                        firstDatabaseRead = false
+                        ClickableButtons(true)
+                        hideProgressDialog()
+                        IA().notifyDataSetChanged()
 
-                    }else if (playerReadies[playerNumber]=="WAITING" && CheckOtherPlayersWaitingOrNotReadyOrNoName()){
-                        FB("Player${playerNumber}Ready","NOT_READY")
+                    }else if(!firstDatabaseRead){
+                        if(playerReadies[playerNumber]=="READY"){
+                            var result = true
+                            for(v in 0..MAX_PLAYERS_MINUS_ONE){
+                                if(v == playerNumber){
+                                    continue
+                                }else if (playerReadies[v] != "WAITING" && playerReadies[v] != "READY" && playerNames[v]!="NO_NAME"){
+                                    result = false
+                                }
+                            }
+                            if(result){
+                                if (activeSlot != 5){
+                                    cooldowns.put(activeSlot,CP().equipped[activeSlot]?.cooldown?:0)
+                                }
+                                DecrementAllCooldowns()
+                                val speedorder = playerSpeeds.values.sortedDescending()
+                                var activePlayers = 0
+                                for (v in speedorder.withIndex()){
+                                    Handler().postDelayed( {ActivateHero(v.value.toInt(),playerPositions[v.value.toInt()]?.toInt(),playerTypes[v.value.toInt()])},300*v.index.toLong() )
+                                    activePlayers++
+                                }
+                                Handler().postDelayed({ClickableButtons(true)},300*activePlayers.toLong())
+                                FB("Player${playerNumber}Ready","WAITING")
+                            }
+
+                        }else if (playerReadies[playerNumber]=="WAITING"){
+                            var result = true
+                            for(v in 0..MAX_PLAYERS_MINUS_ONE){
+                                if(v == playerNumber) { continue }
+                                else if(playerNames[v]=="NO_NAME"){ continue }
+                                else if (playerReadies[v] != "WAITING" && playerReadies[v]!="NOT_READY" && playerNames[v]!="NO_NAME"){ result = false }
+                            }
+                            if (result){
+                                FB("Player${playerNumber}Ready","NOT_READY")
+                            }
+
+                        }else if (playerReadies[playerNumber]=="NOT_READY"){
+                            for (i in 0..MAX_PLAYERS_MINUS_ONE){
+                                if(i != playerNumber){
+                                    if(playerNames[i] == "NO_NAME" && IA().PlayersBoardPos.containsKey(i)){
+                                        IA().PutEmptyAtPosition( IA().PlayersBoardPos[i] )
+                                        IA().PlayersBoardPos.remove(i)
+                                        IA().notifyDataSetChanged()
+                                    }
+                                    if (playerNames[i] != "NO_NAME" && (!IA().PlayersBoardPos.containsKey(i) || IA().PlayersBoardPos[i] != playerLocations[i]?.toInt())){
+                                        IA().PutEnemyToPosition( playerLocations[i]?.toInt()?:0,i)
+                                        IA().PlayersBoardPos.put(i,playerLocations[i]?.toInt()?:0)
+                                        IA().notifyDataSetChanged()
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -146,23 +168,27 @@ class OnlineFragment : Fragment() {
         }
         button_wait.setOnClickListener {
             activeSlot = 5
-            IA().RemoveMarkers(activeMarkers)
+            IA().RemoveMarkers(activeMarkers,playerNumber)
             FB("Player${playerNumber}Type","MOVE")
             FB("Player${playerNumber}Position",IA().PlayersBoardPos[playerNumber].toString())
             FB("Player${playerNumber}Speed","0")
             FB("Player${playerNumber}Ready","READY")
+            ClickableButtons(false)
+
         }
 
         gridView_adventure.setOnItemClickListener(object: AdapterView.OnItemClickListener{
             override fun onItemClick(parent: AdapterView<*>?, _view: View?, position: Int, id: Long) {
-                if(cooldowns[activeSlot]==0){
-                    if(activeMarkers.contains(CalculatePairFromPosition(position))){
+                if(activeMarkers.contains(CalculatePairFromPosition(position))){
+                    if(cooldowns[activeSlot]==0){
+                        IA().RemoveMarkers(activeMarkers,playerNumber)
                         FB("Player${playerNumber}Type",activeAbilityType.toUpperCase())
                         FB("Player${playerNumber}Position",position.toString())
                         FB("Player${playerNumber}Speed",CP().current_speed.toString())
                         FB("Player${playerNumber}Ready","READY")
-                    }
-                }else Toast.makeText(context,"Cooldown ${cooldowns[activeSlot]}",Toast.LENGTH_SHORT).show()
+                        ClickableButtons(false)
+                    }else  Toast.makeText(context,"Cooldown ${cooldowns[activeSlot]}",Toast.LENGTH_SHORT).show()
+                }
             }
         })
 
@@ -173,88 +199,64 @@ class OnlineFragment : Fragment() {
             simpleAlert.setButton(AlertDialog.BUTTON_POSITIVE, "OK", object : DialogInterface.OnClickListener{
                 override fun onClick(dialog: DialogInterface?, which: Int) {
                     FB("Player${playerNumber}Name","NO_NAME")
-                    fragmentManager.beginTransaction().replace(R.id.framelayout_main, MainFragment()).commit()
+                    fragmentManager.beginTransaction().replace(R.id.framelayout_main, MainFragment()).commitAllowingStateLoss()
                 }
             })
             simpleAlert.show()
         }
     }
 
-    fun ActivateHero(pNum:Int){
-        IA().ClearLastMiss()
-        IA().notifyDataSetChanged()
-        if (pNum != playerNumber){
-            if (playerTypes[pNum] == "MOVE"){
-                var illegalMovement = false
-                for (i in 0..MAX_PLAYERS_MINUS_ONE){
-                    if (i != pNum){ if (IA().PlayersBoardPos[i] == playerPositions[pNum]?.toInt()) illegalMovement = true }
-                }
-                if (!illegalMovement) IA().PutEnemyToPosition(playerPositions[pNum]!!.toInt(),pNum)
-            }else if (playerTypes[pNum]=="ATTACK" && pNum != playerNumber){
-                if(playerPositions[pNum]!!.toInt() == IA().PlayersBoardPos[playerNumber]){
-                    FB("Player${playerNumber}Name","NO_NAME")
-                    isHeroDead = true
-                    val simpleAlert = AlertDialog.Builder(activity).create()
-                    simpleAlert.setTitle("You were struck down")
-                    simpleAlert.setMessage("You fell in battle, but recovered eventually..")
-                    simpleAlert.setButton(AlertDialog.BUTTON_POSITIVE, "OK", object : DialogInterface.OnClickListener{
-                        override fun onClick(dialog: DialogInterface?, which: Int) {}
-                    })
-                    simpleAlert.show()
-                    fragmentManager.beginTransaction().replace(R.id.framelayout_main, MainFragment()).commit()
+    fun ActivateHero(pNum:Int,pos:Int?,type:String?){
+        if(this@OnlineFragment.activity != null){
+            IA().ClearLastMiss()
+            IA().notifyDataSetChanged()
+            var illegalMovement = false
+            for (i in 0..MAX_PLAYERS_MINUS_ONE){
+                if (i != pNum){
+                    if (IA().PlayersBoardPos[i] == pos && type == "MOVE") illegalMovement = true
                 }
             }
-            IA().notifyDataSetChanged()
-        }else{
-            val myPosition = playerPositions[playerNumber]?.toInt()?:0
-            val otherPlayerLocations = IA().PlayersBoardPos.filter { it.key != playerNumber }
-            if (!(otherPlayerLocations.containsValue(playerPositions[pNum]?.toInt())&& playerTypes[playerNumber]=="MOVE")){
-                if(playerTypes[playerNumber] == "MOVE"){
-                    IA().PutHeroToPosition(myPosition,playerNumber)
-                    FB("Player${playerNumber}Location", IA().PlayersBoardPos[playerNumber].toString())
-                }else if (playerTypes[playerNumber] == "ATTACK"){
-                    if(IA().PlayersBoardPos.containsValue(myPosition) ){
-                        IA().PutHitToPosition(myPosition)
-                        CP().gold++
-                        IA().PlayersBoardPos.remove(IA().PlayersBoardPos.filter { it.value == myPosition }.keys.first())
+            if (!illegalMovement){
+                if (pNum != playerNumber){
+                    if (type=="ATTACK"){
+                        if(pos == IA().PlayersBoardPos[playerNumber]){
+                            FB("Player${playerNumber}Name","NO_NAME")
+                            isHeroDead = true
+                            val simpleAlert = AlertDialog.Builder(activity).create()
+                            simpleAlert.setTitle("You were struck down")
+                            simpleAlert.setMessage("You fell in battle, but recovered eventually..")
+                            simpleAlert.setButton(AlertDialog.BUTTON_POSITIVE, "OK", object : DialogInterface.OnClickListener{
+                                override fun onClick(dialog: DialogInterface?, which: Int) {}
+                            })
+                            simpleAlert.show()
+                            fragmentManager.beginTransaction().replace(R.id.framelayout_main, MainFragment()).commit()
+                        }
+                    } else if (IA().PlayersBoardPos.containsKey(pNum)){
+                        IA().PutEnemyToPosition(pos?:0,pNum)
+                    }
+                }else if (pNum == playerNumber){
+                    if (type == "ATTACK"){
+                        if(IA().PlayersBoardPos.containsValue(pos) ){
+                            IA().PutHitToPosition(pos?:0)
+                            CP().gold++
+                        }else{
+                            IA().PutMissToPosition(pos?:0)
+                            IA().lastMiss = pos
+                        }
                     }else{
-                        IA().PutMissToPosition(myPosition)
-                        IA().lastMiss = myPosition
+                        IA().PutHeroToPosition(pos?:0,pNum)
+                        FB("Player${pNum}Location", IA().PlayersBoardPos[pNum].toString())
                     }
                 }
                 IA().notifyDataSetChanged()
-                activeMarkers.clear()
             }
         }
     }
-    fun CheckOtherPlayersReadyOrWaitingOrNoName():Boolean{
-        var result = true
-        for(v in 0..MAX_PLAYERS_MINUS_ONE){
-            if(v == playerNumber){
-                continue
-            }else if (!(playerReadies[v] == "WAITING" || playerReadies[v]=="READY" || playerNames[v]=="NO_NAME")){
-                result = false
-            }
-        }
-        return result
-    }
-    fun CheckOtherPlayersWaitingOrNotReadyOrNoName():Boolean{
-        var result = true
-        for(v in 0..MAX_PLAYERS_MINUS_ONE){
-            if(v == playerNumber) {
-                continue
-            }else if(playerNames[v]=="NO_NAME"){
-                continue
-            } else if (!(playerReadies[v] == "WAITING" || playerReadies[v]=="NOT_READY"|| playerNames[v]=="NO_NAME")){
-                result = false
-            }
-        }
-        return result
-    }
+
     fun SelectAbility(slot: Int){
+        IA().RemoveMarkers(activeMarkers,playerNumber)
         val p = CP().equipped
         CP().current_speed=p.get(slot)?.ability?.speed?:0
-        IA().RemoveMarkers(activeMarkers)
         activeAbilityType = p.get(slot)?.ability?.type?:""
         IA().PlaceMarkers(p.get(slot)?.ability?.relative_pairs?: listOf(),playerNumber)
         IA().notifyDataSetChanged()
@@ -273,11 +275,41 @@ class OnlineFragment : Fragment() {
         if(!(cooldowns[4]==0)){ button_mainHand.setText("${p[4]?.name} (${cooldowns[4]})") }else button_mainHand.setText(p[4]?.name)
     }
     fun FB(key: String, value: String ){
-        mDatabase.child(key).setValue(value)
+        mDatabase?.child(key)?.setValue(value)
+    }
+    fun showProgressDialog() {
+        if (mProgressDialog == null) {
+            mProgressDialog = ProgressDialog(context)
+            mProgressDialog!!.setMessage(getString(R.string.list_loading))
+            mProgressDialog!!.isIndeterminate = true
+        }
+        mProgressDialog!!.show()
+    }
+
+    fun hideProgressDialog() {
+        if (mProgressDialog != null && mProgressDialog!!.isShowing) {
+            mProgressDialog!!.dismiss()
+        }
+    }
+    fun ClickableButtons(clickable:Boolean){
+        if(this@OnlineFragment.activity != null){
+            button_head.isEnabled = clickable
+            button_shoulders.isEnabled = clickable
+            button_legs.isEnabled = clickable
+            button_mainHand.isEnabled = clickable
+            button_offHand.isEnabled = clickable
+            button_wait.isEnabled = clickable
+            button_backFromAdventure.isEnabled = clickable
+        }
     }
     override fun onStop() {
         super.onStop()
         FB("Player${playerNumber}Name","NO_NAME")
+        FB("Player${playerNumber}Location","0")
+        FB("Player${playerNumber}Type","MOVE")
+        FB("Player${playerNumber}Position","0")
+        FB("Player${playerNumber}Speed","0")
+        FB("Player${playerNumber}Ready","NOT_READY")
     }
     fun CP() = (activity as MainActivity).currentPlayer
     fun IA() = (gridView_adventure.adapter as OnlineImageAdapter)

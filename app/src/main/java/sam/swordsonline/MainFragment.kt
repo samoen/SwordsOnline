@@ -23,6 +23,7 @@ class MainFragment : Fragment(), ItemAdapter.onViewSelectedListener {
         super.onViewCreated(view, savedInstanceState)
 
         button_game_room_1.setOnClickListener {
+            (activity as MainActivity).fragmentManager.beginTransaction().remove(OnlineFragment()).commitAllowingStateLoss()
             fragmentManager.beginTransaction().replace(R.id.framelayout_main,OnlineFragment()).commit()
         }
         textView_playerInfo.setText("${(activity as MainActivity).currentPlayer.name} The Brave\n" +

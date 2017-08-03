@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SwordsOnline</string>
+    <string name="list_loading">Loading..</string>
 </resources>

@@ -65,19 +65,15 @@ class OnlineImageAdapter(private val mContext: Context) : BaseAdapter() {
         }
     }
 
-    fun RemoveMarkers(squares: List<Pair<Int,Int>>){
+    fun RemoveMarkers(squares: List<Pair<Int,Int>>, pNum: Int){
         for (v in squares){
             if(v.first in 1..10 && v.second in 1..10){
-                var markerOnPlayer = false
                 for(m in PlayersBoardPos){
-                    if(CalculatePositionFromPair(v) == m.value){
-                        markerOnPlayer = true
+                    if(CalculatePositionFromPair(v) == m.value && CalculatePositionFromPair(v) != PlayersBoardPos[pNum]){
+                        mThumbIds.set(CalculatePositionFromPair(v),enemy)
+                    }else if(CalculatePositionFromPair(v) != PlayersBoardPos[pNum]){
+                        mThumbIds.set(CalculatePositionFromPair(v),emptySquare)
                     }
-                }
-                if(markerOnPlayer){
-                    mThumbIds.set(CalculatePositionFromPair(v),enemy)
-                }else{
-                    mThumbIds.set(CalculatePositionFromPair(v),emptySquare)
                 }
             }
         }
