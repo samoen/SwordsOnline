@@ -8,7 +8,8 @@ object ShopItemList {
                     equipment_slot = 0,
                     ability = Ability(type = "move", relative_pairs = listOf(Pair(0,1),Pair(1,0), Pair(-1,0),Pair(1,-1),Pair(-1,-1)),speed = 1),
                     price = 0,
-                    cooldown = 3
+                    cooldown = 3,
+                    image_resource = R.drawable.item_image_helmet
             ),
             1 to Item(
                     name = "tattered clothes",
@@ -16,7 +17,8 @@ object ShopItemList {
                     equipment_slot = 1,
                     ability = Ability(type = "move", relative_pairs = listOf(Pair(2,0), Pair(-2,0)),speed = 2),
                     cooldown = 2,
-                    price = 0
+                    price = 0,
+                    image_resource = R.drawable.item_image_shoulders
             ),
             2 to Item(
                     name = "old shoes",
@@ -24,7 +26,8 @@ object ShopItemList {
                     equipment_slot = 2,
                     ability = Ability("move", listOf(Pair(0,2),Pair(0,-1)),3),
                     price = 0,
-                    cooldown = 2
+                    cooldown = 2,
+                    image_resource = R.drawable.item_image_legs
             ),
             3 to Item(
                     name = "beaten shield",
@@ -32,7 +35,9 @@ object ShopItemList {
                     equipment_slot = 3,
                     ability = Ability("attack", listOf(Pair(0,1),Pair(1,0),Pair(-1,0)),3),
                     cooldown = 3,
-                    price = 0
+                    price = 0,
+                    image_resource = R.drawable.item_image_shield
+
             ),
             4 to Item(
                     name = "dusty knife",
@@ -40,7 +45,8 @@ object ShopItemList {
                     equipment_slot = 4,
                     ability = Ability(type = "attack", relative_pairs = listOf(Pair(1,1),Pair(-1,1),Pair(0,-1),Pair(0,1)),speed = 4),
                     cooldown = 3,
-                    price = 0
+                    price = 0,
+                    image_resource = R.drawable.item_image_sword
             ),
             5 to Item(
                     name = "sword of deadliness",
@@ -48,7 +54,8 @@ object ShopItemList {
                     equipment_slot = 4,
                     ability = Ability("attack", listOf(Pair(0,1),Pair(0,3),Pair(1,2),Pair(-1,2)),8),
                     cooldown = 1,
-                    price = 6
+                    price = 6,
+                    image_resource = R.drawable.item_image_sword
             ),
             6 to Item(
                     name = "mage stick",
@@ -56,7 +63,8 @@ object ShopItemList {
                     equipment_slot = 4,
                     ability = Ability("attack", listOf(Pair(0,3),Pair(1,2),Pair(-1,2),Pair(-1,3),Pair(1,3)),3),
                     cooldown = 3,
-                    price = 5
+                    price = 5,
+                    image_resource = R.drawable.item_image_sword
             ),
             7 to Item(
                     name = "cloth boots",
@@ -64,7 +72,8 @@ object ShopItemList {
                     equipment_slot = 2,
                     ability = Ability("move", listOf(Pair(0,1),Pair(0,3),Pair(1,2),Pair(-1,2)),3),
                     cooldown = 2,
-                    price = 9
+                    price = 9,
+                    image_resource = R.drawable.item_image_legs
             ),
             8 to Item(
                     name = "plate legs",
@@ -72,7 +81,8 @@ object ShopItemList {
                     equipment_slot = 2,
                     ability = Ability("move", listOf(Pair(0,2),Pair(-1,3),Pair(1,2),Pair(-1,-2)),8),
                     cooldown = 2,
-                    price = 3
+                    price = 3,
+                    image_resource = R.drawable.item_image_legs
             ),
             9 to Item(
                     name = "knight shield",
@@ -80,7 +90,8 @@ object ShopItemList {
                     equipment_slot = 3,
                     ability = Ability("attack", listOf(Pair(0,1),Pair(1,1),Pair(-1,0),Pair(1,0),Pair(-1,1)),5),
                     cooldown = 2,
-                    price = 2
+                    price = 2,
+                    image_resource = R.drawable.item_image_shield
             ),
             10 to Item(
                     name = "great helm",
@@ -88,7 +99,8 @@ object ShopItemList {
                     equipment_slot = 0,
                     ability = Ability("move", listOf(Pair(-1,-3),Pair(0,-3),Pair(1,2),Pair(-1,2)),3),
                     cooldown = 1,
-                    price = 7
+                    price = 7,
+                    image_resource = R.drawable.item_image_helmet
             ),
             11 to Item(
                     name = "duelist buckler",
@@ -96,15 +108,17 @@ object ShopItemList {
                     equipment_slot = 3,
                     ability = Ability("attack", listOf(Pair(0,1),Pair(1,0),Pair(1,2),Pair(-1,2)),8),
                     cooldown = 1,
-                    price = 2
+                    price = 2,
+                    image_resource = R.drawable.item_image_shield
             ),
             12 to Item(
                     name = "chainmail",
                     stat_requirement = StatRequirement(5..8,2..6,2..6),
                     equipment_slot = 1,
-                    ability = Ability("move", listOf(Pair(-1,-1),Pair(-1,-2),Pair(1,2),Pair(-3,1),Pair(1,1),Pair(3,1)),2),
+                    ability = Ability("move", listOf(Pair(-1,-1),Pair(-1,-2),Pair(1,2),Pair(-3,1),Pair(1,1),Pair(3,1)), 2),
                     cooldown = 3,
-                    price = 7
+                    price = 7,
+                    image_resource = R.drawable.item_image_shoulders
             )
     )
 }
