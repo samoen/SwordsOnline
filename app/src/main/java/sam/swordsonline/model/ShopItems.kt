@@ -122,6 +122,115 @@ object ShopItemList {
                     cooldown = 3,
                     price = 7,
                     image_resource = R.drawable.item_image_shoulders
+            ),
+            13 to Item(
+                    name = "Plated Greaves",
+                    stat_requirement = StatRequirement(strength_range = 6..10, dexterity_range = 2..6, intelligence_range = 1..5),
+                    equipment_slot = 2,
+                    ability = Ability("move", listOf(Pair(1,3),Pair(-1,3),Pair(1,-3),Pair(-1,-3)),8),
+                    cooldown = 1,
+                    price = 4,
+                    image_resource = R.drawable.item_image_legs
+            ),
+            14 to Item(
+                    name = "bad shield",
+                    stat_requirement = StatRequirement(3..8,2..6,2..6),
+                    equipment_slot = 3,
+                    ability = Ability("attack", listOf(Pair(0,1),Pair(1,0),Pair(-1,0)),3),
+                    cooldown = 3,
+                    price = 0,
+                    image_resource = R.drawable.item_image_shield
+
+            ),
+            15 to Item(
+                    name = "green sword",
+                    stat_requirement = StatRequirement(3..10,2..6,2..6),
+                    equipment_slot = 4,
+                    ability = Ability(type = "attack", relative_pairs = listOf(Pair(1,1),Pair(-1,1),Pair(0,-1),Pair(0,1)),speed = 4),
+                    cooldown = 3,
+                    price = 0,
+                    image_resource = R.drawable.item_image_sword
+            ),
+            16 to Item(
+                    name = "red sword",
+                    stat_requirement = StatRequirement(5..10,2..6,2..6),
+                    equipment_slot = 4,
+                    ability = Ability("attack", listOf(Pair(0,1),Pair(0,3),Pair(1,2),Pair(-1,2)),8),
+                    cooldown = 1,
+                    price = 6,
+                    image_resource = R.drawable.item_image_sword
+            ),
+            17 to Item(
+                    name = "mage staff",
+                    stat_requirement = StatRequirement(5..8,2..6,2..6),
+                    equipment_slot = 4,
+                    ability = Ability("attack", listOf(Pair(0,3),Pair(1,2),Pair(-1,2),Pair(-1,3),Pair(1,3)),3),
+                    cooldown = 3,
+                    price = 5,
+                    image_resource = R.drawable.item_image_sword
+            ),
+            18 to Item(
+                    name = "fancy pants",
+                    stat_requirement = StatRequirement(5..10,2..6,2..6),
+                    equipment_slot = 2,
+                    ability = Ability("move", listOf(Pair(0,1),Pair(0,3),Pair(1,2),Pair(-1,2)),3),
+                    cooldown = 2,
+                    price = 9,
+                    image_resource = R.drawable.item_image_legs
+            ),
+            19 to Item(
+                    name = "gold pantaloons",
+                    stat_requirement = StatRequirement(5..8,2..6,2..6),
+                    equipment_slot = 2,
+                    ability = Ability("move", listOf(Pair(0,2),Pair(-1,3),Pair(1,2),Pair(-1,-2)),8),
+                    cooldown = 2,
+                    price = 3,
+                    image_resource = R.drawable.item_image_legs
+            ),
+            20 to Item(
+                    name = "fire shield",
+                    stat_requirement = StatRequirement(5..10,2..6,2..6),
+                    equipment_slot = 3,
+                    ability = Ability("attack", listOf(Pair(0,1),Pair(1,1),Pair(-1,0),Pair(1,0),Pair(-1,1)),5),
+                    cooldown = 2,
+                    price = 2,
+                    image_resource = R.drawable.item_image_shield
+            ),
+            21 to Item(
+                    name = "war helm",
+                    stat_requirement = StatRequirement(5..8,2..6,2..6),
+                    equipment_slot = 0,
+                    ability = Ability("move", listOf(Pair(-1,-3),Pair(0,-3),Pair(1,2),Pair(-1,2)),3),
+                    cooldown = 1,
+                    price = 7,
+                    image_resource = R.drawable.item_image_helmet
+            ),
+            22 to Item(
+                    name = "iron buckler",
+                    stat_requirement = StatRequirement(5..10,2..6,2..6),
+                    equipment_slot = 3,
+                    ability = Ability("attack", listOf(Pair(0,1),Pair(1,0),Pair(1,2),Pair(-1,2)),8),
+                    cooldown = 1,
+                    price = 2,
+                    image_resource = R.drawable.item_image_shield
+            ),
+            23 to Item(
+                    name = "warriors mail",
+                    stat_requirement = StatRequirement(5..8,2..6,2..6),
+                    equipment_slot = 1,
+                    ability = Ability("move", listOf(Pair(-1,-1),Pair(-1,-2),Pair(1,2),Pair(-3,1),Pair(1,1),Pair(3,1)), 2),
+                    cooldown = 3,
+                    price = 7,
+                    image_resource = R.drawable.item_image_shoulders
+            ),
+            24 to Item(
+                    name = "boots of speed",
+                    stat_requirement = StatRequirement(strength_range = 6..10, dexterity_range = 2..6, intelligence_range = 1..5),
+                    equipment_slot = 2,
+                    ability = Ability("move", listOf(Pair(1,3),Pair(-1,3),Pair(1,-3),Pair(-1,-3)),8),
+                    cooldown = 1,
+                    price = 4,
+                    image_resource = R.drawable.item_image_legs
             )
     )
 }

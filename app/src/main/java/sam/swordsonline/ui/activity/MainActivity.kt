@@ -7,10 +7,10 @@ import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 import ninja.sakib.pultusorm.core.PultusORM
 import sam.swordsonline.R
+import sam.swordsonline.model.Item
 import sam.swordsonline.model.Player
 import sam.swordsonline.model.ShopItemList
 import sam.swordsonline.model.hideKeyboard
-import sam.swordsonline.model.*
 import sam.swordsonline.ui.fragment.MainFragment
 
 class MainActivity : AppCompatActivity() {
@@ -34,6 +34,18 @@ class MainActivity : AppCompatActivity() {
         var i10:Int=0
         var i11:Int=0
         var i12:Int=0
+        var i13:Int=0
+        var i14:Int=0
+        var i15:Int=0
+        var i16:Int=0
+        var i17:Int=0
+        var i18:Int=0
+        var i19:Int=0
+        var i20:Int=0
+        var i21:Int=0
+        var i22:Int=0
+        var i23:Int=0
+        var i24:Int=0
     }
 
     val startingItems = mutableListOf<Item>(
@@ -93,6 +105,18 @@ class MainActivity : AppCompatActivity() {
                 if(p.i10 == 1) currentPlayer.items.add(ShopItemList.allItems[10]?:Item())
                 if(p.i11 == 1) currentPlayer.items.add(ShopItemList.allItems[11]?:Item())
                 if(p.i12 == 1) currentPlayer.items.add(ShopItemList.allItems[12]?:Item())
+                if(p.i13 == 1) currentPlayer.items.add(ShopItemList.allItems[13]?:Item())
+                if(p.i14 == 1) currentPlayer.items.add(ShopItemList.allItems[14]?:Item())
+                if(p.i15 == 1) currentPlayer.items.add(ShopItemList.allItems[15]?:Item())
+                if(p.i16 == 1) currentPlayer.items.add(ShopItemList.allItems[16]?:Item())
+                if(p.i17 == 1) currentPlayer.items.add(ShopItemList.allItems[17]?:Item())
+                if(p.i18 == 1) currentPlayer.items.add(ShopItemList.allItems[18]?:Item())
+                if(p.i19 == 1) currentPlayer.items.add(ShopItemList.allItems[19]?:Item())
+                if(p.i20 == 1) currentPlayer.items.add(ShopItemList.allItems[20]?:Item())
+                if(p.i21 == 1) currentPlayer.items.add(ShopItemList.allItems[21]?:Item())
+                if(p.i22 == 1) currentPlayer.items.add(ShopItemList.allItems[22]?:Item())
+                if(p.i23 == 1) currentPlayer.items.add(ShopItemList.allItems[23]?:Item())
+                if(p.i24 == 1) currentPlayer.items.add(ShopItemList.allItems[24]?:Item())
             }
             GoToMainFragment()
         }
@@ -130,6 +154,18 @@ class MainActivity : AppCompatActivity() {
                 ShopItemList.allItems[10]?.name -> dbp.i10 = 1
                 ShopItemList.allItems[11]?.name -> dbp.i11 = 1
                 ShopItemList.allItems[12]?.name -> dbp.i12 = 1
+                ShopItemList.allItems[13]?.name -> dbp.i13 = 1
+                ShopItemList.allItems[14]?.name -> dbp.i14 = 1
+                ShopItemList.allItems[15]?.name -> dbp.i15 = 1
+                ShopItemList.allItems[16]?.name -> dbp.i16 = 1
+                ShopItemList.allItems[17]?.name -> dbp.i17 = 1
+                ShopItemList.allItems[18]?.name -> dbp.i18 = 1
+                ShopItemList.allItems[19]?.name -> dbp.i19 = 1
+                ShopItemList.allItems[20]?.name -> dbp.i20 = 1
+                ShopItemList.allItems[21]?.name -> dbp.i21 = 1
+                ShopItemList.allItems[22]?.name -> dbp.i22 = 1
+                ShopItemList.allItems[23]?.name -> dbp.i23 = 1
+                ShopItemList.allItems[24]?.name -> dbp.i24 = 1
             }
         }
 
