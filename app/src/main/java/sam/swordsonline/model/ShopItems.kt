@@ -215,7 +215,7 @@ object ShopItemList {
                         image_resource = R.drawable.item_image_shield
                 ),
                 23 to Item(
-                        name = "Warriors Mail",
+                        name = "Intensive Warriors Mail of Sluggishness",
                         stat_requirement = StatRequirement(strength_range = 5..8,dexterity_range = 2..6,intelligence_range = 2..6),
                         equipment_slot = 1,
                         ability = Ability("move", listOf(Pair(-1,-1),Pair(-1,-2),Pair(1,2),Pair(-3,1),Pair(1,1),Pair(3,1)), 2),
