@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/SwordsOnline.iml" filepath="$PROJECT_DIR$/SwordsOnline.iml" />
-      <module fileurl="file://$PROJECT_DIR$/SwordsOnline-sam.iml" filepath="$PROJECT_DIR$/SwordsOnline-sam.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

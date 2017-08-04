@@ -3,7 +3,6 @@ package sam.swordsonline.model
 import android.app.Activity
 import android.content.Context
 import android.view.inputmethod.InputMethodManager
-import sam.swordsonline.R
 
 data class Player(var name: String = "DefaultPlayer", var strength: Int = 5, var dexterity: Int = 5, var intelligence: Int = 5, var items: MutableList<Item> = mutableListOf<Item>(), var location: Pair<Int, Int> = Pair(11, 11), var gold: Int = 0, var equipped: MutableMap<Int, Item?> = mutableMapOf<Int, Item?>(), var current_speed: Int = 0, var equippedKeys: MutableMap<Int, Int> = mutableMapOf<Int, Int>(0 to 0, 1 to 1, 2 to 2, 3 to 3, 4 to 4)) {
 
@@ -58,6 +57,7 @@ data class Player(var name: String = "DefaultPlayer", var strength: Int = 5, var
 
 
 data class StatRequirement(var strength_range: IntRange = 0..11, var dexterity_range: IntRange = 0..11, var intelligence_range: IntRange = 0..11)
+
 data class Ability(var type: String = "default ability", var relative_pairs: List<Pair<Int, Int>> = listOf(), var speed: Int = 0)
 
 fun CalculatePairFromPosition(pos: Int): Pair<Int, Int> {
