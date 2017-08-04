@@ -1,4 +1,4 @@
-package sam.swordsonline
+package sam.swordsonline.ui.fragment
 
 import android.app.Fragment
 import android.app.ProgressDialog
@@ -13,6 +13,10 @@ import android.widget.AdapterView
 import android.widget.Toast
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.fragment_online.*
+import sam.swordsonline.adapter.OnlineImageAdapter
+import sam.swordsonline.model.CalculatePairFromPosition
+import sam.swordsonline.ui.activity.MainActivity
+import sam.swordsonline.R
 
 class OnlineFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {

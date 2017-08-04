@@ -1,9 +1,11 @@
-package sam.swordsonline
+package sam.swordsonline.adapter
 
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.shop_item.view.*
+import sam.swordsonline.model.Item
+import sam.swordsonline.R
 
 class ItemAdapter(val viewActions: onViewSelectedListener, shopItems: MutableList<Item>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 

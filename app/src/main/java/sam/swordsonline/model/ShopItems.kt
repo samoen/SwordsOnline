@@ -1,4 +1,7 @@
-package sam.swordsonline
+package sam.swordsonline.model
+
+import sam.swordsonline.R
+
 object ShopItemList {
 
     val allItems = mapOf<Int,Item>(

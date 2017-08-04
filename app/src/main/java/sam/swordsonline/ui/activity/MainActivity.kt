@@ -1,4 +1,4 @@
-package sam.swordsonline
+package sam.swordsonline.ui.activity
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -6,6 +6,12 @@ import android.view.View
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 import ninja.sakib.pultusorm.core.PultusORM
+import sam.swordsonline.R
+import sam.swordsonline.model.Player
+import sam.swordsonline.model.ShopItemList
+import sam.swordsonline.model.hideKeyboard
+import sam.swordsonline.model.*
+import sam.swordsonline.ui.fragment.MainFragment
 
 class MainActivity : AppCompatActivity() {
 

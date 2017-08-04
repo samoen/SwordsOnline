@@ -1,4 +1,4 @@
-package sam.swordsonline
+package sam.swordsonline.ui.fragment
 
 import android.app.Fragment
 import android.content.DialogInterface
@@ -10,6 +10,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import kotlinx.android.synthetic.main.fragment_item_shop.*
+import sam.swordsonline.R
+import sam.swordsonline.adapter.ItemAdapter
+import sam.swordsonline.model.ShopItemList
+import sam.swordsonline.ui.activity.MainActivity
+import sam.swordsonline.model.Item
 
 class ItemShopFragment:Fragment(), ItemAdapter.onViewSelectedListener {
 
@@ -49,7 +54,7 @@ class ItemShopFragment:Fragment(), ItemAdapter.onViewSelectedListener {
             val linearLayout = LinearLayoutManager(context)
             layoutManager = linearLayout
         }
-        recyclerView_shopItems.adapter = ItemAdapter(this,ShopItemList.allItems.values.toMutableList())
+        recyclerView_shopItems.adapter = ItemAdapter(this, ShopItemList.allItems.values.toMutableList())
     }
 }
 

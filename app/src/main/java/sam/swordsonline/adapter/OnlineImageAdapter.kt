@@ -1,10 +1,13 @@
-package sam.swordsonline
+package sam.swordsonline.adapter
 
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
+import sam.swordsonline.R
+import sam.swordsonline.model.CalculatePairFromPosition
+import sam.swordsonline.model.CalculatePositionFromPair
 
 class OnlineImageAdapter(private val mContext: Context) : BaseAdapter() {
 

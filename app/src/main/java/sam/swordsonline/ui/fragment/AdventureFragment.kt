@@ -1,4 +1,4 @@
-package sam.swordsonline
+package sam.swordsonline.ui.fragment
 
 import android.app.Fragment
 import android.content.DialogInterface
@@ -11,6 +11,9 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.Toast
 import kotlinx.android.synthetic.main.fragment_adventure.*
+import sam.swordsonline.R
+import sam.swordsonline.adapter.ImageAdapter
+import sam.swordsonline.ui.activity.MainActivity
 
 class AdventureFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
