@@ -24,6 +24,7 @@ class AdventureFragment : Fragment() {
     var activeAbilityType: String = ""
     var isHeroDead: Boolean = false
     var activeSlot = 5
+    var myspd = 0
 
     var cooldowns = mutableMapOf<Int,Int>(0 to 0, 1 to 0, 2 to 0,3 to 0,4 to 0)
 
@@ -62,8 +63,8 @@ class AdventureFragment : Fragment() {
         }
         button_wait.setOnClickListener {
             IA().RemoveMarkers(activeMarkers)
-            IA().ActivateMonsters(true)
-            IA().ActivateMonsters(false)
+            IA().ActivateMonsters(true,myspd)
+            IA().ActivateMonsters(false,myspd)
             IA().GenerateMonster()
             IA().notifyDataSetChanged()
             DecrementAllCooldowns()
@@ -77,7 +78,7 @@ class AdventureFragment : Fragment() {
                 if(CheckCooldown(activeSlot)){
                     if(activeMarkers.contains(IA().CalculatePairFromPosition(position))){
                         IA().RemoveMarkers(activeMarkers)
-                        IA().ActivateMonsters(true)
+                        IA().ActivateMonsters(true,myspd)
                         IA().notifyDataSetChanged()
 
                         cooldowns.put(activeSlot,p[activeSlot]?.cooldown?:0)
@@ -105,7 +106,8 @@ class AdventureFragment : Fragment() {
     }
     fun SelectAbility(slot: Int){
         val p = CP().equipped
-        CP().current_speed=p.get(slot)?.ability?.speed?:0
+        myspd = p.get(slot)?.ability?.speed?:0
+
         IA().RemoveMarkers(activeMarkers)
         activeAbilityType = p.get(slot)?.ability?.type?:""
         IA().PlaceMarkers(p.get(slot)?.ability?.relative_pairs?: listOf())
@@ -128,7 +130,7 @@ class AdventureFragment : Fragment() {
     fun SlowerStage(){
         if(!isHeroDead){
             IA().ClearLastMiss()
-            IA().ActivateMonsters(false)
+            IA().ActivateMonsters(false,myspd)
             IA().GenerateMonster()
             IA().notifyDataSetChanged()
             CheckDeath()

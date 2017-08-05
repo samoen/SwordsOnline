@@ -13,10 +13,10 @@ import android.widget.AdapterView
 import android.widget.Toast
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.fragment_online.*
+import sam.swordsonline.R
 import sam.swordsonline.adapter.OnlineImageAdapter
 import sam.swordsonline.model.CalculatePairFromPosition
 import sam.swordsonline.ui.activity.MainActivity
-import sam.swordsonline.R
 
 class OnlineFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -32,7 +32,6 @@ class OnlineFragment : Fragment() {
     var playerSpeeds : MutableMap<Int,String> = mutableMapOf()
     var playerPositions : MutableMap<Int,String> = mutableMapOf()
     var playerLocations : MutableMap<Int,String> = mutableMapOf()
-    var activeMarkers: MutableList<Pair<Int,Int>> = mutableListOf()
     var activeAbilityType: String = ""
     var firstDatabaseRead = true
     var isHeroDead: MutableMap<Int,Boolean> = mutableMapOf()
@@ -40,6 +39,9 @@ class OnlineFragment : Fragment() {
     var cooldowns = mutableMapOf<Int,Int>(0 to 0, 1 to 0, 2 to 0,3 to 0,4 to 0)
     var mDatabase: DatabaseReference? = null
     var mProgressDialog: ProgressDialog? = null
+    var myspd = 0
+    var roomFull = false
+    var exited = false
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -79,6 +81,7 @@ class OnlineFragment : Fragment() {
                                 IA().PutHeroToPosition(startpos,i)
                                 break
                             }else if (i == MAX_PLAYERS_MINUS_ONE){
+                                roomFull = true
                                 Toast.makeText(context,"Game Room 1 Full",Toast.LENGTH_SHORT).show()
                                 fragmentManager.beginTransaction().replace(R.id.framelayout_main, MainFragment()).commit()
                             }
@@ -91,7 +94,6 @@ class OnlineFragment : Fragment() {
                         firstDatabaseRead = false
                         ClickableButtons(true)
                         hideProgressDialog()
-                        IA().notifyDataSetChanged()
 
                     }else if(!firstDatabaseRead){
 
@@ -139,15 +141,11 @@ class OnlineFragment : Fragment() {
                                 if(i != playerNumber){
                                     if(playerNames[i] == "NO_NAME" && IA().PlayersBoardPos.containsKey(i)){
                                         Toast.makeText(context,getString(R.string.left),Toast.LENGTH_SHORT).show()
-                                        IA().PutEmptyAtPosition( IA().PlayersBoardPos[i] )
-                                        IA().PlayersBoardPos.remove(i)
-                                        IA().notifyDataSetChanged()
+                                        IA().RemoveEnemy(i)
                                     }
                                     if (playerNames[i] != "NO_NAME" && !IA().PlayersBoardPos.containsKey(i)){
                                         Toast.makeText(context,"${playerNames[i]} ${getString(R.string.joined)}",Toast.LENGTH_SHORT).show()
                                         IA().PutEnemyToPosition( playerLocations[i]?.toInt()?:0,i)
-                                        IA().PlayersBoardPos.put(i,playerLocations[i]?.toInt()?:0)
-                                        IA().notifyDataSetChanged()
                                     }
                                 }
                             }
@@ -180,7 +178,7 @@ class OnlineFragment : Fragment() {
         }
         button_wait.setOnClickListener {
             activeSlot = 5
-            IA().RemoveMarkers(activeMarkers,playerNumber)
+            IA().RemoveMarkers(playerNumber)
             FB("Player${playerNumber}Type","MOVE")
             FB("Player${playerNumber}Position",IA().PlayersBoardPos[playerNumber].toString())
             FB("Player${playerNumber}Speed","0")
@@ -191,12 +189,12 @@ class OnlineFragment : Fragment() {
 
         gridView_adventure.setOnItemClickListener(object: AdapterView.OnItemClickListener{
             override fun onItemClick(parent: AdapterView<*>?, _view: View?, position: Int, id: Long) {
-                if(activeMarkers.contains(CalculatePairFromPosition(position))){
+                if(IA().activeMarkers.contains(CalculatePairFromPosition(position))){
                     if(cooldowns[activeSlot]==0){
-                        IA().RemoveMarkers(activeMarkers,playerNumber)
+                        IA().RemoveMarkers(playerNumber)
                         FB("Player${playerNumber}Type",activeAbilityType.toUpperCase())
                         FB("Player${playerNumber}Position",position.toString())
-                        FB("Player${playerNumber}Speed",CP().current_speed.toString())
+                        FB("Player${playerNumber}Speed",myspd.toString())
                         FB("Player${playerNumber}Ready","READY")
                         ClickableButtons(false)
                     }else  Toast.makeText(context,"Cooldown ${cooldowns[activeSlot]}",Toast.LENGTH_SHORT).show()
@@ -210,7 +208,7 @@ class OnlineFragment : Fragment() {
             simpleAlert.setMessage(getString(R.string.want_to_leave_battle))
             simpleAlert.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.leave_battle), object : DialogInterface.OnClickListener{
                 override fun onClick(dialog: DialogInterface?, which: Int) {
-                    FB("Player${playerNumber}Name","NO_NAME")
+                    LeaveFB()
                     fragmentManager.beginTransaction().replace(R.id.framelayout_main, MainFragment()).commitAllowingStateLoss()
                 }
             })
@@ -239,7 +237,7 @@ class OnlineFragment : Fragment() {
                 if (pNum != playerNumber){
                     if (type=="ATTACK"){
                         if(pos == IA().PlayersBoardPos[playerNumber]){
-                            FB("Player${playerNumber}Name","NO_NAME")
+                            LeaveFB()
                             isHeroDead[playerNumber] = true
                             val simpleAlert = AlertDialog.Builder(activity).create()
                             simpleAlert.setTitle(getString(R.string.struck_down))
@@ -270,12 +268,10 @@ class OnlineFragment : Fragment() {
     }
 
     fun SelectAbility(slot: Int){
-        IA().RemoveMarkers(activeMarkers,playerNumber)
-        CP().current_speed=CP().equipped.get(slot)?.ability?.speed?:0
+        IA().RemoveMarkers(playerNumber)
+        myspd=CP().equipped.get(slot)?.ability?.speed?:0
         activeAbilityType = CP().equipped.get(slot)?.ability?.type?:""
         IA().PlaceMarkers(CP().equipped.get(slot)?.ability?.relative_pairs?: listOf(),playerNumber)
-        IA().notifyDataSetChanged()
-        activeMarkers = IA().CalculatePairsFromRelative(CP().equipped.get(slot)?.ability?.relative_pairs?: listOf(),playerNumber) as MutableList<Pair<Int, Int>>
     }
     fun DecrementAllCooldowns(){
         for(v in cooldowns){
@@ -288,6 +284,15 @@ class OnlineFragment : Fragment() {
         if(!(cooldowns[3]==0)){ button_offHand.setText("${CP().equipped[3]?.name} (${cooldowns[3]})") }else button_offHand.setText(CP().equipped[3]?.name)
         if(!(cooldowns[4]==0)){ button_mainHand.setText("${CP().equipped[4]?.name} (${cooldowns[4]})") }else button_mainHand.setText(CP().equipped[4]?.name)
     }
+    fun LeaveFB(){
+        FB("Player${playerNumber}Name","NO_NAME")
+        FB("Player${playerNumber}Location","0")
+        FB("Player${playerNumber}Type","NO_TYPE")
+        FB("Player${playerNumber}Position","0")
+        FB("Player${playerNumber}Speed","0")
+        FB("Player${playerNumber}Ready","NO_READY")
+    }
+
     fun FB(key: String, value: String ){
         mDatabase?.child(key)?.setValue(value)
     }
@@ -318,13 +323,20 @@ class OnlineFragment : Fragment() {
     }
     override fun onStop() {
         super.onStop()
-        FB("Player${playerNumber}Name","NO_NAME")
-        FB("Player${playerNumber}Location","0")
-        FB("Player${playerNumber}Type","MOVE")
-        FB("Player${playerNumber}Position","0")
-        FB("Player${playerNumber}Speed","0")
-        FB("Player${playerNumber}Ready","NOT_READY")
+        if (!roomFull){
+            LeaveFB()
+        }
+        exited = true
     }
+
+    override fun onResume() {
+        super.onResume()
+        if (exited){
+            fragmentManager.beginTransaction().replace(R.id.framelayout_main, MainFragment()).commit()
+        }
+    }
+
+
     fun CP() = (activity as MainActivity).currentPlayer
     fun IA() = (gridView_adventure.adapter as OnlineImageAdapter)
 }

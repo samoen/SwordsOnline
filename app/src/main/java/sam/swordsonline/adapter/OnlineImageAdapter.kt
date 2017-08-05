@@ -11,6 +11,7 @@ import sam.swordsonline.model.CalculatePositionFromPair
 
 class OnlineImageAdapter(private val mContext: Context) : BaseAdapter() {
 
+    var activeMarkers: MutableList<Pair<Int,Int>> = mutableListOf()
     var lastMiss : Int? = null
     var PlayersBoardPos = mutableMapOf<Int,Int>()
     val option = R.drawable.target_square
@@ -60,16 +61,18 @@ class OnlineImageAdapter(private val mContext: Context) : BaseAdapter() {
     }
 
     fun PlaceMarkers(squares: List<Pair<Int,Int>>,mpNum: Int){
+        activeMarkers = CalculatePairsFromRelative(squares,mpNum) as MutableList<Pair<Int, Int>>
         val absos = CalculatePairsFromRelative(squares,mpNum)
         for (v in absos){
             if(v.first in 1..10 && v.second in 1..10){
                 mThumbIds.set(CalculatePositionFromPair(v),option)
             }
         }
+        notifyDataSetChanged()
     }
 
-    fun RemoveMarkers(squares: List<Pair<Int,Int>>, pNum: Int){
-        for (v in squares){
+    fun RemoveMarkers(pNum: Int){
+        for (v in activeMarkers){
             if(v.first in 1..10 && v.second in 1..10){
                 for(m in PlayersBoardPos){
                     if(CalculatePositionFromPair(v) == m.value && CalculatePositionFromPair(v) != PlayersBoardPos[pNum]){
@@ -80,6 +83,8 @@ class OnlineImageAdapter(private val mContext: Context) : BaseAdapter() {
                 }
             }
         }
+        activeMarkers.clear()
+        notifyDataSetChanged()
     }
 
     fun PutHeroToPosition(position: Int, mpNum:Int){
@@ -88,6 +93,7 @@ class OnlineImageAdapter(private val mContext: Context) : BaseAdapter() {
         }
         mThumbIds.set(position,player)
         PlayersBoardPos.put(mpNum,position)
+        notifyDataSetChanged()
     }
 
     fun PutEnemyToPosition(pos:Int, pNum:Int){
@@ -96,6 +102,15 @@ class OnlineImageAdapter(private val mContext: Context) : BaseAdapter() {
         }
         PlayersBoardPos.put(pNum,pos)
         mThumbIds.set(pos,enemy)
+        notifyDataSetChanged()
+    }
+
+    fun RemoveEnemy(pNum: Int){
+        if (PlayersBoardPos.containsKey(pNum)){
+            mThumbIds.set(PlayersBoardPos[pNum]?:0,emptySquare)
+            PlayersBoardPos.remove(pNum)
+            notifyDataSetChanged()
+        }
     }
 
     fun ClearLastMiss(){ if(!(lastMiss == null)){ mThumbIds.set(lastMiss as Int,emptySquare) } }
