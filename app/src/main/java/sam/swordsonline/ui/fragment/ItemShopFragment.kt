@@ -53,7 +53,7 @@ class ItemShopFragment:Fragment(), ItemAdapter.onViewSelectedListener {
             val linearLayout = LinearLayoutManager(context)
             layoutManager = linearLayout
         }
-        recyclerView_shopItems.adapter = ItemAdapter(this, (activity as MainActivity).shopItems.allItems.values.toMutableList())
+        recyclerView_shopItems.adapter = ItemAdapter(this, (activity as MainActivity).ItemList.allItems.values.toMutableList())
     }
 }
 

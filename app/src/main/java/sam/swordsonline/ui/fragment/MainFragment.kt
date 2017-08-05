@@ -77,8 +77,8 @@ class MainFragment : Fragment(), ItemAdapter.onViewSelectedListener {
         simpleAlert.show()
     }
     fun findKey(str:String):Int{
-        for(i in (activity as MainActivity).shopItems.allItems.keys){
-            if ((activity as MainActivity).shopItems.allItems[i]?.name == str){
+        for(i in (activity as MainActivity).ItemList.allItems.keys){
+            if ((activity as MainActivity).ItemList.allItems[i]?.name == str){
                 return i
             }
         }

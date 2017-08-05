@@ -11,9 +11,11 @@ import sam.swordsonline.model.CalculatePositionFromPair
 
 class OnlineImageAdapter(private val mContext: Context) : BaseAdapter() {
 
+    var lootBags: MutableMap<Int,Int> = mutableMapOf()
     var activeMarkers: MutableList<Pair<Int,Int>> = mutableListOf()
     var underMarkerImagePos: MutableMap<Int,Int> = mutableMapOf()
-    var lastMiss : Int? = null
+    var lastMiss : Pair<Int,Int>? = null
+    var lastHit : Int? = null
     var PlayersBoardPos = mutableMapOf<Int,Int>()
     val option = R.drawable.target_square
     val player = R.drawable.hero_image
@@ -21,6 +23,7 @@ class OnlineImageAdapter(private val mContext: Context) : BaseAdapter() {
     val hitSquare = R.drawable.dead_goblin_image
     val enemy = R.drawable.green_hero_image
     val miss = R.drawable.miss_square
+    val lootbag = R.drawable.loot_image
     private val mThumbIds = arrayOf<Int>(
             emptySquare, emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,
             emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,
@@ -106,17 +109,47 @@ class OnlineImageAdapter(private val mContext: Context) : BaseAdapter() {
 
     fun RemoveEnemy(pNum: Int){
         if (PlayersBoardPos.containsKey(pNum)){
-            mThumbIds.set(PlayersBoardPos[pNum]?:0,emptySquare)
+            //mThumbIds.set(PlayersBoardPos[pNum]?:0,emptySquare)
+            PlayersBoardPos.remove(pNum)
+            notifyDataSetChanged()
+        }
+    }
+    fun KillEnemy(pNum: Int){
+        if (PlayersBoardPos.containsKey(pNum)){
+            mThumbIds.set(PlayersBoardPos[pNum]?:0,lootbag)
             PlayersBoardPos.remove(pNum)
             notifyDataSetChanged()
         }
     }
 
-    fun ClearLastMiss(){ if(!(lastMiss == null)){ mThumbIds.set(lastMiss as Int,emptySquare) } }
-
-    fun PutMissToPosition(pos:Int){ mThumbIds.set(pos,miss) }
-
-    fun PutHitToPosition(pos:Int){ mThumbIds.set(pos,hitSquare) }
+    fun PutMissToPosition(pos:Int){
+        lastMiss = Pair(pos,mThumbIds.get(pos))
+        mThumbIds.set(pos,miss)
+    }
+    fun ClearLastMiss(){
+        if(!(lastMiss == null)){
+            mThumbIds.set(lastMiss?.first?:0,lastMiss?.second?:0)
+            lastMiss = null
+            notifyDataSetChanged()
+        }
+    }
+    fun PutHitToPosition(pos:Int){
+        mThumbIds.set(pos,hitSquare)
+        lastHit = pos
+    }
+    fun ClearLastHit(){
+        if(!(lastHit == null)){
+            mThumbIds.set(lastHit as Int,emptySquare)
+            lastHit = null
+        }
+    }
+    fun PutLootBag(pos:Int,id:Int){
+        mThumbIds.set(pos,lootbag)
+        lootBags.set(pos,id)
+    }
+    fun RemoveLootBag(pos:Int){
+        lootBags.remove(pos)
+    }
 
     fun CalculatePairsFromRelative(rel: List<Pair<Int,Int>>,mpNum: Int):List<Pair<Int,Int>> {
         val absolutes = mutableListOf<Pair<Int, Int>>()
@@ -126,7 +159,6 @@ class OnlineImageAdapter(private val mContext: Context) : BaseAdapter() {
         }
         return absolutes
     }
-
 
 }
 

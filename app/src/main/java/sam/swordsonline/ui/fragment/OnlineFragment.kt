@@ -16,6 +16,7 @@ import kotlinx.android.synthetic.main.fragment_online.*
 import sam.swordsonline.R
 import sam.swordsonline.adapter.OnlineImageAdapter
 import sam.swordsonline.model.CalculatePairFromPosition
+import sam.swordsonline.model.Item
 import sam.swordsonline.ui.activity.MainActivity
 
 class OnlineFragment : Fragment() {
@@ -24,7 +25,6 @@ class OnlineFragment : Fragment() {
     }
 
     val MAX_PLAYERS_MINUS_ONE = 2
-    val PLAYER_KILL_REWARD = 5
     var playerNumber = 0
     var playerReadies : MutableMap<Int,String> = mutableMapOf()
     var playerNames : MutableMap<Int,String> = mutableMapOf()
@@ -32,6 +32,7 @@ class OnlineFragment : Fragment() {
     var playerSpeeds : MutableMap<Int,String> = mutableMapOf()
     var playerPositions : MutableMap<Int,String> = mutableMapOf()
     var playerLocations : MutableMap<Int,String> = mutableMapOf()
+    var playerLoots : MutableMap<Int,String> = mutableMapOf()
     var activeAbilityType: String = ""
     var firstDatabaseRead = true
     var isHeroDead: MutableMap<Int,Boolean> = mutableMapOf()
@@ -42,6 +43,9 @@ class OnlineFragment : Fragment() {
     var myspd = 0
     var roomFull = false
     var exited = false
+    var Loot: MutableMap<Int,String> = mutableMapOf()
+    var myLootSlot = 0
+    var lockPlayers = false
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -49,6 +53,8 @@ class OnlineFragment : Fragment() {
         showProgressDialog()
 
         ClickableButtons(false)
+
+        StartFB("GameRoom1")
 
         gridView_adventure.adapter = OnlineImageAdapter(activity)
 
@@ -58,103 +64,6 @@ class OnlineFragment : Fragment() {
         button_offHand.setText(CP().equipped[3]?.name)
         button_mainHand.setText(CP().equipped[4]?.name)
 
-        mDatabase =  FirebaseDatabase.getInstance().getReference("GameRoom1")
-        mDatabase?.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                if(this@OnlineFragment.activity != null){
-                    for(i in 0..MAX_PLAYERS_MINUS_ONE){
-                        playerReadies.put(i, dataSnapshot.child("Player${i}Ready").getValue(String::class.java).toString())
-                        playerNames.put(i, dataSnapshot.child("Player${i}Name").getValue(String::class.java).toString())
-                        playerPositions.put(i, dataSnapshot.child("Player${i}Position").getValue(String::class.java).toString())
-                        playerSpeeds.put(i, dataSnapshot.child("Player${i}Speed").getValue(String::class.java).toString())
-                        playerTypes.put(i, dataSnapshot.child("Player${i}Type").getValue(String::class.java).toString())
-                        playerLocations.put(i, dataSnapshot.child("Player${i}Location").getValue(String::class.java).toString())
-                    }
-                    if(firstDatabaseRead){
-                        for(i in 0..MAX_PLAYERS_MINUS_ONE){
-                            if (playerNames[i]=="NO_NAME"){
-                                val startpos = 99-((i+1)*3)
-                                playerNumber = i
-                                FB("Player${i}Location", startpos.toString())
-                                FB("Player${i}Ready","NOT_READY")
-                                FB("Player${i}Name",CP().name)
-                                IA().PutHeroToPosition(startpos,i)
-                                break
-                            }else if (i == MAX_PLAYERS_MINUS_ONE){
-                                roomFull = true
-                                Toast.makeText(context,"Game Room 1 Full",Toast.LENGTH_SHORT).show()
-                                fragmentManager.beginTransaction().replace(R.id.framelayout_main, MainFragment()).commit()
-                            }
-                        }
-                        for (i in playerLocations){
-                            if (i.key != playerNumber && playerNames[i.key]!="NO_NAME"){
-                                IA().PutEnemyToPosition(i.value.toInt(),i.key)
-                            }
-                        }
-                        firstDatabaseRead = false
-                        ClickableButtons(true)
-                        hideProgressDialog()
-
-                    }else if(!firstDatabaseRead){
-
-                        val activePlayerNames = playerNames.filter { it.value != "NO_NAME" }
-                        val activePlayerSpeeds = playerSpeeds.filter { activePlayerNames.containsKey(it.key) }
-                        val speedSortedPlayerNumbers = activePlayerSpeeds.toList().sortedByDescending { (_, v) -> v }.toMap()
-
-                        val mpos = playerPositions
-                        val mtyp = playerTypes
-
-                        if(playerReadies[playerNumber]=="READY"){
-                            var otherPlayersReadyOrWaiting = true
-                            for(v in 0..MAX_PLAYERS_MINUS_ONE){
-                                if(v != playerNumber && playerReadies[v] != "WAITING" && playerReadies[v] != "READY" && playerNames[v]!="NO_NAME"){
-                                    otherPlayersReadyOrWaiting = false
-                                }
-                            }
-                            if(otherPlayersReadyOrWaiting){
-                                if (activeSlot != 5){
-                                    cooldowns.put(activeSlot,CP().equipped[activeSlot]?.cooldown?:0)
-                                }
-                                DecrementAllCooldowns()
-                                var inc = 0
-                                for (v in speedSortedPlayerNumbers){
-                                    Handler().postDelayed( {ActivateHero(v.key,mpos[v.key]?.toInt(),mtyp[v.key])},300*inc.toLong() )
-                                    inc++
-                                }
-                                Handler().postDelayed({ClickableButtons(true)},300*activePlayerNames.size.toLong())
-                                FB("Player${playerNumber}Ready","WAITING")
-                            }
-
-                        }else if (playerReadies[playerNumber]=="WAITING"){
-                            var result = true
-                            for(v in 0..MAX_PLAYERS_MINUS_ONE){
-                                if(v != playerNumber && playerReadies[v] != "WAITING" && playerReadies[v]!="NOT_READY" && playerNames[v]!="NO_NAME"){
-                                    result = false
-                                }
-                            }
-                            if (result){
-                                FB("Player${playerNumber}Ready","NOT_READY")
-                            }
-
-                        }else if (playerReadies[playerNumber]=="NOT_READY"){
-                            for (i in 0..MAX_PLAYERS_MINUS_ONE){
-                                if(i != playerNumber){
-                                    if(playerNames[i] == "NO_NAME" && IA().PlayersBoardPos.containsKey(i)){
-                                        Toast.makeText(context,getString(R.string.left),Toast.LENGTH_SHORT).show()
-                                        IA().RemoveEnemy(i)
-                                    }
-                                    if (playerNames[i] != "NO_NAME" && !IA().PlayersBoardPos.containsKey(i)){
-                                        Toast.makeText(context,"${playerNames[i]} ${getString(R.string.joined)}",Toast.LENGTH_SHORT).show()
-                                        IA().PutEnemyToPosition( playerLocations[i]?.toInt()?:0,i)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            override fun onCancelled(databaseError: DatabaseError) {}
-        })
 
         button_head.setOnClickListener {
             activeSlot =0
@@ -179,9 +88,7 @@ class OnlineFragment : Fragment() {
         button_wait.setOnClickListener {
             activeSlot = 5
             IA().RemoveMarkers(playerNumber)
-            FB("Player${playerNumber}Type","MOVE")
-            FB("Player${playerNumber}Position",IA().PlayersBoardPos[playerNumber].toString())
-            FB("Player${playerNumber}Speed","0")
+            FB("Player${playerNumber}Type","WAIT")
             FB("Player${playerNumber}Ready","READY")
             ClickableButtons(false)
 
@@ -229,11 +136,7 @@ class OnlineFragment : Fragment() {
                     }
                 }
             }
-
-            if (!IA().PlayersBoardPos.containsValue(pos) && type == "ATTACK"){
-                IA().PutMissToPosition(pos?:0)
-                IA().lastMiss = pos
-            } else if (!illegalMovement){
+            if (!illegalMovement){
                 if (pNum != playerNumber){
                     if (type=="ATTACK"){
                         if(pos == IA().PlayersBoardPos[playerNumber]){
@@ -246,20 +149,37 @@ class OnlineFragment : Fragment() {
                                 override fun onClick(dialog: DialogInterface?, which: Int) {}
                             })
                             simpleAlert.show()
-                            CP().gold = CP().gold - PLAYER_KILL_REWARD
+                            CP().items.removeAll { it.id == Loot[playerNumber]?.toInt() }
+                            CP().equipped.remove(myLootSlot)
+                            CP().equipped.set(myLootSlot,(activity as MainActivity).ItemList.allItems[myLootSlot])
                             fragmentManager.beginTransaction().replace(R.id.framelayout_main, MainFragment()).commit()
+                        }else if(IA().PlayersBoardPos.containsValue(pos)){
+                            val enemyKey = IA().PlayersBoardPos.filter{ it.value == pos }.keys.firstOrNull()
+                            IA().PutLootBag(pos?:0,Loot[enemyKey]?.toInt()?:0)
+                        }else if(!IA().PlayersBoardPos.containsValue(pos)){
+                            IA().PutMissToPosition(pos?:0)
                         }
-                    } else if (IA().PlayersBoardPos.containsKey(pNum)){
+                    } else if (type == "MOVE" && IA().PlayersBoardPos.containsKey(pNum)){
                         IA().PutEnemyToPosition(pos?:0,pNum)
                     }
                 }else if (pNum == playerNumber){
-                    if (type == "ATTACK" && IA().PlayersBoardPos.containsValue(pos)){
-                        isHeroDead[IA().PlayersBoardPos.filter{ it.value == pos }.keys.first()] = true
-                        IA().PutHitToPosition(pos?:0)
-                        CP().gold = CP().gold + PLAYER_KILL_REWARD
+                    val enemyKey = IA().PlayersBoardPos.filter{ it.value == pos }.keys.firstOrNull()
+                    if (type == "ATTACK"){
+                        if(IA().PlayersBoardPos.containsValue(pos)){
+                            isHeroDead[enemyKey?:0] = true
+                            IA().PutHitToPosition(pos?:0)
+                            IA().KillEnemy(enemyKey?:0)
+                            IA().PutLootBag(pos?:0,Loot[pNum]?.toInt()?:0)
+                        }else if(!IA().PlayersBoardPos.containsValue(pos)){
+                            IA().PutMissToPosition(pos?:0)
+                        }
                     }else if(type == "MOVE"){
                         IA().PutHeroToPosition(pos?:0,pNum)
                         FB("Player${pNum}Location", IA().PlayersBoardPos[pNum].toString())
+                        if (IA().lootBags.containsKey(pos)){
+                            CP().items.add((activity as MainActivity).ItemList.allItems[IA().lootBags[pos]]?: Item())
+                            IA().RemoveLootBag(pos?:0)
+                        }
                     }
                 }
                 IA().notifyDataSetChanged()
@@ -267,6 +187,129 @@ class OnlineFragment : Fragment() {
         }
     }
 
+
+    fun StartFB(room: String){
+        mDatabase =  FirebaseDatabase.getInstance().getReference(room)
+        mDatabase?.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if(this@OnlineFragment.activity != null){
+                    for(i in 0..MAX_PLAYERS_MINUS_ONE){
+                        playerReadies.put(i, dataSnapshot.child("Player${i}Ready").getValue(String::class.java).toString())
+                        playerNames.put(i, dataSnapshot.child("Player${i}Name").getValue(String::class.java).toString())
+                        playerPositions.put(i, dataSnapshot.child("Player${i}Position").getValue(String::class.java).toString())
+                        playerSpeeds.put(i, dataSnapshot.child("Player${i}Speed").getValue(String::class.java).toString())
+                        playerTypes.put(i, dataSnapshot.child("Player${i}Type").getValue(String::class.java).toString())
+                        playerLocations.put(i, dataSnapshot.child("Player${i}Location").getValue(String::class.java).toString())
+                        playerLoots.put(i, dataSnapshot.child("Player${i}Loot").getValue(String::class.java).toString())
+                    }
+                    if(firstDatabaseRead){
+                        for(i in 0..MAX_PLAYERS_MINUS_ONE){
+                            if (playerNames[i]=="NO_NAME"){
+                                val startpos = 99-((i+1)*3)
+                                playerNumber = i
+                                FB("Player${i}Location", startpos.toString())
+                                FB("Player${i}Ready","NOT_READY")
+                                FB("Player${i}Loot",CalculateMyLoot().toString())
+                                FB("Player${i}Name",CP().name)
+                                IA().PutHeroToPosition(startpos,i)
+                                break
+                            }else if (i == MAX_PLAYERS_MINUS_ONE){
+                                roomFull = true
+                                Toast.makeText(context,"Game Room 1 Full",Toast.LENGTH_SHORT).show()
+                                fragmentManager.beginTransaction().replace(R.id.framelayout_main, MainFragment()).commit()
+                            }
+                        }
+                        for (i in playerLocations){
+                            if (i.key != playerNumber && playerNames[i.key]!="NO_NAME"){
+                                IA().PutEnemyToPosition(i.value.toInt(),i.key)
+                            }
+                        }
+                        firstDatabaseRead = false
+                        ClickableButtons(true)
+                        hideProgressDialog()
+
+                    }else if(!firstDatabaseRead){
+
+                        val activePlayerNames = playerNames.filter { it.value != "NO_NAME" }
+                        val activePlayerSpeeds = playerSpeeds.filter { activePlayerNames.containsKey(it.key) }
+                        val speedSortedPlayerNumbers = activePlayerSpeeds.toList().sortedByDescending { (_, v) -> v }.toMap()
+
+                        val mpos = playerPositions
+                        val mtyp = playerTypes
+                        Loot = playerLoots
+
+                        if(playerReadies[playerNumber]=="READY"){
+                            var otherPlayersReadyOrWaiting = true
+                            for(v in 0..MAX_PLAYERS_MINUS_ONE){
+                                if(v != playerNumber && playerReadies[v] != "WAITING" && playerReadies[v] != "READY" && playerNames[v]!="NO_NAME"){
+                                    otherPlayersReadyOrWaiting = false
+                                }
+                            }
+                            if(otherPlayersReadyOrWaiting){
+                                if (activeSlot != 5){
+                                    cooldowns.put(activeSlot,CP().equipped[activeSlot]?.cooldown?:0)
+                                }
+                                DecrementAllCooldowns()
+                                var inc = 0
+                                lockPlayers = true
+                                for (v in speedSortedPlayerNumbers){
+                                    Handler().postDelayed( {ActivateHero(v.key,mpos[v.key]?.toInt(),mtyp[v.key])},300*inc.toLong() )
+                                    inc++
+                                }
+                                Handler().postDelayed({
+                                    ClickableButtons(true)
+                                    if(this@OnlineFragment.activity != null){
+                                        IA().ClearLastMiss()
+                                    }
+                                    lockPlayers = false
+                                },300*activePlayerNames.size.toLong())
+                                FB("Player${playerNumber}Ready","WAITING")
+                            }
+
+                        }else if (playerReadies[playerNumber]=="WAITING"){
+                            var result = true
+                            for(v in 0..MAX_PLAYERS_MINUS_ONE){
+                                if(v != playerNumber && playerReadies[v] != "WAITING" && playerReadies[v]!="NOT_READY" && playerNames[v]!="NO_NAME"){
+                                    result = false
+                                }
+                            }
+                            if (result){
+                                FB("Player${playerNumber}Ready","NOT_READY")
+                            }
+
+                        }else if (playerReadies[playerNumber]=="NOT_READY"){
+                            for (i in 0..MAX_PLAYERS_MINUS_ONE){
+                                if(i != playerNumber && !lockPlayers){
+                                    if(playerNames[i] == "NO_NAME" && IA().PlayersBoardPos.containsKey(i)){
+                                        Toast.makeText(context,getString(R.string.left),Toast.LENGTH_SHORT).show()
+                                        IA().RemoveEnemy(i)
+                                    }
+                                    if (playerNames[i] != "NO_NAME" && !IA().PlayersBoardPos.containsKey(i)){
+                                        Toast.makeText(context,"${playerNames[i]} ${getString(R.string.joined)}",Toast.LENGTH_SHORT).show()
+                                        IA().PutEnemyToPosition( playerLocations[i]?.toInt()?:0,i)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            override fun onCancelled(databaseError: DatabaseError) {}
+        })
+    }
+    fun LeaveFB(){
+        FB("Player${playerNumber}Name","NO_NAME")
+        FB("Player${playerNumber}Location","0")
+        FB("Player${playerNumber}Type","NO_TYPE")
+        FB("Player${playerNumber}Position","0")
+        FB("Player${playerNumber}Speed","0")
+        FB("Player${playerNumber}Ready","NO_READY")
+        FB("Player${playerNumber}Loot","0")
+    }
+
+    fun FB(key: String, value: String ){
+        mDatabase?.child(key)?.setValue(value)
+    }
     fun SelectAbility(slot: Int){
         IA().RemoveMarkers(playerNumber)
         myspd=CP().equipped.get(slot)?.ability?.speed?:0
@@ -283,18 +326,6 @@ class OnlineFragment : Fragment() {
         if(!(cooldowns[2]==0)){ button_legs.setText("${CP().equipped[2]?.name} (${cooldowns[2]})") }else button_legs.setText(CP().equipped[2]?.name)
         if(!(cooldowns[3]==0)){ button_offHand.setText("${CP().equipped[3]?.name} (${cooldowns[3]})") }else button_offHand.setText(CP().equipped[3]?.name)
         if(!(cooldowns[4]==0)){ button_mainHand.setText("${CP().equipped[4]?.name} (${cooldowns[4]})") }else button_mainHand.setText(CP().equipped[4]?.name)
-    }
-    fun LeaveFB(){
-        FB("Player${playerNumber}Name","NO_NAME")
-        FB("Player${playerNumber}Location","0")
-        FB("Player${playerNumber}Type","NO_TYPE")
-        FB("Player${playerNumber}Position","0")
-        FB("Player${playerNumber}Speed","0")
-        FB("Player${playerNumber}Ready","NO_READY")
-    }
-
-    fun FB(key: String, value: String ){
-        mDatabase?.child(key)?.setValue(value)
     }
     fun showProgressDialog() {
         if (mProgressDialog == null) {
@@ -320,6 +351,19 @@ class OnlineFragment : Fragment() {
             button_wait.isEnabled = clickable
             button_backFromAdventure.isEnabled = clickable
         }
+    }
+
+    fun CalculateMyLoot():Int{
+        var mostExpensiveId = CP().equipped[0]?.id
+        for (k in CP().equipped){
+            val mEquip = k.value?.price?:0
+            val mCompare = (activity as MainActivity).ItemList.allItems[mostExpensiveId]?.price?:0
+            if (mEquip >  mCompare){
+                mostExpensiveId = k.value?.id
+                myLootSlot = k.key
+            }
+        }
+        return mostExpensiveId?:0
     }
     override fun onStop() {
         super.onStop()
