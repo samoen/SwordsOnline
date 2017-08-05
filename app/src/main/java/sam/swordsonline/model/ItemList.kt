@@ -2,7 +2,7 @@ package sam.swordsonline.model
 
 import sam.swordsonline.R
 
-object ShopItemList {
+class ItemList {
 
         val allItems = mapOf<Int,Item>(
                 0 to  Item(

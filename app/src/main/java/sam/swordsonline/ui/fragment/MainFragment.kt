@@ -12,9 +12,8 @@ import android.widget.Toast
 import kotlinx.android.synthetic.main.fragment_main.*
 import sam.swordsonline.R
 import sam.swordsonline.adapter.ItemAdapter
-import sam.swordsonline.model.ShopItemList
-import sam.swordsonline.ui.activity.MainActivity
 import sam.swordsonline.model.Item
+import sam.swordsonline.ui.activity.MainActivity
 
 class MainFragment : Fragment(), ItemAdapter.onViewSelectedListener {
 
@@ -78,8 +77,8 @@ class MainFragment : Fragment(), ItemAdapter.onViewSelectedListener {
         simpleAlert.show()
     }
     fun findKey(str:String):Int{
-        for(i in ShopItemList.allItems.keys){
-            if (ShopItemList.allItems[i]?.name == str){
+        for(i in (activity as MainActivity).shopItems.allItems.keys){
+            if ((activity as MainActivity).shopItems.allItems[i]?.name == str){
                 return i
             }
         }

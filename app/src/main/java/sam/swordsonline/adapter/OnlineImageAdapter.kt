@@ -12,6 +12,7 @@ import sam.swordsonline.model.CalculatePositionFromPair
 class OnlineImageAdapter(private val mContext: Context) : BaseAdapter() {
 
     var activeMarkers: MutableList<Pair<Int,Int>> = mutableListOf()
+    var underMarkerImagePos: MutableMap<Int,Int> = mutableMapOf()
     var lastMiss : Int? = null
     var PlayersBoardPos = mutableMapOf<Int,Int>()
     val option = R.drawable.target_square
@@ -65,7 +66,9 @@ class OnlineImageAdapter(private val mContext: Context) : BaseAdapter() {
         val absos = CalculatePairsFromRelative(squares,mpNum)
         for (v in absos){
             if(v.first in 1..10 && v.second in 1..10){
-                mThumbIds.set(CalculatePositionFromPair(v),option)
+                val pos = CalculatePositionFromPair(v)
+                underMarkerImagePos.set(pos,mThumbIds[pos])
+                mThumbIds.set(pos,option)
             }
         }
         notifyDataSetChanged()
@@ -74,16 +77,12 @@ class OnlineImageAdapter(private val mContext: Context) : BaseAdapter() {
     fun RemoveMarkers(pNum: Int){
         for (v in activeMarkers){
             if(v.first in 1..10 && v.second in 1..10){
-                for(m in PlayersBoardPos){
-                    if(CalculatePositionFromPair(v) == m.value && CalculatePositionFromPair(v) != PlayersBoardPos[pNum]){
-                        mThumbIds.set(CalculatePositionFromPair(v),enemy)
-                    }else if(CalculatePositionFromPair(v) != PlayersBoardPos[pNum]){
-                        mThumbIds.set(CalculatePositionFromPair(v),emptySquare)
-                    }
-                }
+                val pos = CalculatePositionFromPair(v)
+                mThumbIds.set(pos,underMarkerImagePos[pos]?:0)
             }
         }
         activeMarkers.clear()
+        underMarkerImagePos.clear()
         notifyDataSetChanged()
     }
 
@@ -114,8 +113,6 @@ class OnlineImageAdapter(private val mContext: Context) : BaseAdapter() {
     }
 
     fun ClearLastMiss(){ if(!(lastMiss == null)){ mThumbIds.set(lastMiss as Int,emptySquare) } }
-
-    fun PutEmptyAtPosition(pos:Int?){ if (pos != null) mThumbIds.set(pos,emptySquare) }
 
     fun PutMissToPosition(pos:Int){ mThumbIds.set(pos,miss) }
 
