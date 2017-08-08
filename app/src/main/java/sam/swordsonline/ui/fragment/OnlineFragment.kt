@@ -52,7 +52,6 @@ class OnlineFragment : Fragment() {
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        //Handler().postDelayed({folding_tab_bar.expand()},300)
         folding_tab_bar.onFoldingItemClickListener = object : FoldingTabBar.OnFoldingItemSelectedListener {
             override fun onFoldingItemSelected(item: MenuItem): Boolean {
                 when (item.itemId) {
@@ -153,7 +152,7 @@ class OnlineFragment : Fragment() {
                             simpleAlert.show()
                             CP().items.removeAll { it.id == Loot[playerNumber]?.toInt() }
                             CP().equipped.remove(myLootSlot)
-                            CP().equipped.set(myLootSlot,(activity as MainActivity).ItemList.allItems[myLootSlot])
+                            CP().equipped.set(myLootSlot,IL()[myLootSlot])
                             fragmentManager.beginTransaction().replace(R.id.framelayout_main, MainFragment()).commit()
                         }else if(IA().PlayersBoardPos.containsValue(pos)){
                             val enemyKey = IA().PlayersBoardPos.filter{ it.value == pos }.keys.firstOrNull()
@@ -171,7 +170,7 @@ class OnlineFragment : Fragment() {
                             isHeroDead[enemyKey?:0] = true
                             IA().PutHitToPosition(pos?:0)
                             IA().KillEnemy(enemyKey?:0)
-                            IA().PutLootBag(pos?:0,Loot[pNum]?.toInt()?:0)
+                            IA().PutLootBag(pos?:0,Loot[enemyKey]?.toInt()?:0)
                         }else if(!IA().PlayersBoardPos.containsValue(pos)){
                             IA().PutMissToPosition(pos?:0)
                         }
@@ -179,7 +178,8 @@ class OnlineFragment : Fragment() {
                         IA().PutHeroToPosition(pos?:0,pNum)
                         FB("Player${pNum}Location", IA().PlayersBoardPos[pNum].toString())
                         if (IA().lootBags.containsKey(pos)){
-                            CP().items.add((activity as MainActivity).ItemList.allItems[IA().lootBags[pos]]?: Item())
+                            Toast.makeText(context,"loot $Loot , IAlootbag  ${IA().lootBags[pos]}",Toast.LENGTH_LONG).show()
+                            CP().items.add(IL()[IA().lootBags[pos]]?: Item())
                             IA().RemoveLootBag(pos?:0)
                         }
                     }
@@ -289,6 +289,7 @@ class OnlineFragment : Fragment() {
                                     if (playerNames[i] != "NO_NAME" && !IA().PlayersBoardPos.containsKey(i)){
                                         Toast.makeText(context,"${playerNames[i]} ${getString(R.string.joined)}",Toast.LENGTH_SHORT).show()
                                         IA().PutEnemyToPosition( playerLocations[i]?.toInt()?:0,i)
+                                        Loot.put(i,playerLoots[i].toString())
                                     }
                                 }
                             }
@@ -362,7 +363,7 @@ class OnlineFragment : Fragment() {
         var mostExpensiveId = CP().equipped[0]?.id
         for (k in CP().equipped){
             val mEquip = k.value?.price?:0
-            val mCompare = (activity as MainActivity).ItemList.allItems[mostExpensiveId]?.price?:0
+            val mCompare = IL()[mostExpensiveId]?.price?:0
             if (mEquip >  mCompare){
                 mostExpensiveId = k.value?.id
                 myLootSlot = k.key
@@ -388,4 +389,5 @@ class OnlineFragment : Fragment() {
 
     fun CP() = (activity as MainActivity).currentPlayer
     fun IA() = (gridView_online.adapter as OnlineImageAdapter)
+    fun IL() = (activity as MainActivity).ItemList.allItems
 }

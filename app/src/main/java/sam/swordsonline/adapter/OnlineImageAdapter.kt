@@ -109,7 +109,7 @@ class OnlineImageAdapter(private val mContext: Context) : BaseAdapter() {
 
     fun RemoveEnemy(pNum: Int){
         if (PlayersBoardPos.containsKey(pNum)){
-            //mThumbIds.set(PlayersBoardPos[pNum]?:0,emptySquare)
+            mThumbIds.set(PlayersBoardPos[pNum]?:0,emptySquare)
             PlayersBoardPos.remove(pNum)
             notifyDataSetChanged()
         }
@@ -145,7 +145,7 @@ class OnlineImageAdapter(private val mContext: Context) : BaseAdapter() {
     }
     fun PutLootBag(pos:Int,id:Int){
         mThumbIds.set(pos,lootbag)
-        lootBags.set(pos,id)
+        lootBags.put(pos,id)
     }
     fun RemoveLootBag(pos:Int){
         lootBags.remove(pos)

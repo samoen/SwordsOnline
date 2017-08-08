@@ -35,16 +35,6 @@ class ItemList {
                         id = 2,
                         image_resource = R.drawable.item_image_legs
                 ),
-                4 to Item(
-                        name = "Dusty Knife",
-                        stat_requirement = StatRequirement(strength_range = 3..10,dexterity_range = 2..6,intelligence_range = 2..6),
-                        equipment_slot = 4,
-                        ability = Ability(type = "attack", relative_pairs = listOf(Pair(1,1),Pair(-1,1),Pair(0,-1),Pair(0,1)),speed = 4),
-                        cooldown = 3,
-                        price = 0,
-                        id = 4,
-                        image_resource = R.drawable.item_image_sword
-                ),
                 3 to Item(
                         name = "Beaten Shield",
                         stat_requirement = StatRequirement(strength_range = 3..8,dexterity_range = 2..6,intelligence_range = 2..6),
@@ -55,6 +45,16 @@ class ItemList {
                         id = 3,
                         image_resource = R.drawable.item_image_shield
 
+                ),
+                4 to Item(
+                name = "Dusty Knife",
+                stat_requirement = StatRequirement(strength_range = 3..10,dexterity_range = 2..6,intelligence_range = 2..6),
+                equipment_slot = 4,
+                ability = Ability(type = "attack", relative_pairs = listOf(Pair(1,1),Pair(-1,1),Pair(0,-1),Pair(0,1)),speed = 4),
+                cooldown = 3,
+                price = 0,
+                id = 4,
+                image_resource = R.drawable.item_image_sword
                 ),
 
                 5 to Item(
