@@ -29,6 +29,7 @@ class OnlineFragment : Fragment() {
     }
 
     val MAX_PLAYERS_MINUS_ONE = 2
+    val ANIMATION_TIME = 300
     var playerNumber = 0
     var playerReadies : MutableMap<Int,String> = mutableMapOf()
     var playerNames : MutableMap<Int,String> = mutableMapOf()
@@ -54,11 +55,13 @@ class OnlineFragment : Fragment() {
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        chronometer_time.base = SystemClock.elapsedRealtime() + 500
+        showProgressDialog()
+        StartFB(CP().room)
+
+        chronometer_time.base = SystemClock.elapsedRealtime()
         chronometer_time.onChronometerTickListener = object: Chronometer.OnChronometerTickListener {
             override fun onChronometerTick(chronometer: Chronometer?) {
                 if(chronometer?.text == "00:10"){
-                    chronometer_time.stop()
                     Wait()
                 }
             }
@@ -95,11 +98,9 @@ class OnlineFragment : Fragment() {
             }
         }
 
-        showProgressDialog()
 
-        ClickableButtons(false)
 
-        StartFB(CP().room)
+
 
         gridView_online.adapter = OnlineImageAdapter(activity)
 
@@ -133,7 +134,7 @@ class OnlineFragment : Fragment() {
     }
 
     fun ActivateHero(pNum:Int,pos:Int?,type:String?){
-        if(this@OnlineFragment.activity != null && isHeroDead[pNum] != true){
+        if(isHeroDead[pNum] != true){
             IA().ClearLastMiss()
             IA().notifyDataSetChanged()
             var illegalMovement = false
@@ -268,14 +269,18 @@ class OnlineFragment : Fragment() {
                                 var inc = 0
                                 lockPlayers = true
                                 for (v in speedSortedPlayerNumbers){
-                                    Handler().postDelayed( {ActivateHero(v.key,mpos[v.key]?.toInt(),mtyp[v.key])},300*inc.toLong() )
+                                    Handler().postDelayed( {
+                                        if(this@OnlineFragment.activity != null){
+                                            ActivateHero(v.key,mpos[v.key]?.toInt(),mtyp[v.key])
+                                        }
+                                    },ANIMATION_TIME*inc.toLong() )
                                     inc++
                                 }
                                 Handler().postDelayed({
                                     if(this@OnlineFragment.activity != null){
                                         FB("Player${playerNumber}Ready","WAITING")
                                     }
-                                },300*activePlayerNames.size.toLong())
+                                },ANIMATION_TIME*activePlayerNames.size.toLong())
                             }
 
                         }else if (playerReadies[playerNumber]=="WAITING"){
@@ -363,16 +368,15 @@ class OnlineFragment : Fragment() {
         }
     }
     fun ClickableButtons(clickable:Boolean){
-        if(this@OnlineFragment.activity != null){
-            if(clickable){
-                ShowCooldownTextViews(false)
-                folding_tab_bar.expand()
-                chronometer_time.base = SystemClock.elapsedRealtime()
-                chronometer_time.start()
-            }else if(!clickable){
-                ShowCooldownTextViews(true)
-                folding_tab_bar.rollUp()
-            }
+        if(clickable){
+            ShowCooldownTextViews(false)
+            folding_tab_bar.expand()
+            chronometer_time.base = SystemClock.elapsedRealtime()
+            chronometer_time.start()
+        }else if(!clickable){
+            ShowCooldownTextViews(true)
+            folding_tab_bar.rollUp()
+            chronometer_time.stop()
         }
     }
     fun ShowCooldownTextViews(showBlank:Boolean){
