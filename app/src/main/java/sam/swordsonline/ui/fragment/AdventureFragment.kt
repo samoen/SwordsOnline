@@ -31,33 +31,67 @@ class AdventureFragment : Fragment() {
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+
+        /*Handler().postDelayed({folding_tab_bar.expand()},300)
+        folding_tab_bar.onFoldingItemClickListener = object : FoldingTabBar.OnFoldingItemSelectedListener {
+            override fun onFoldingItemSelected(item: MenuItem): Boolean {
+                when (item.itemId) {
+                    R.id.ftb_menu_head -> {
+                        activeSlot =0
+                        SelectAbility(activeSlot)
+                    }
+                    R.id.ftb_menu_shoulders -> {
+                        activeSlot =1
+                        SelectAbility(activeSlot)
+                    }
+                    R.id.ftb_menu_legs -> {
+                        activeSlot =2
+                        SelectAbility(activeSlot)
+                    }
+                    R.id.ftb_menu_offhand -> {
+                        activeSlot =3
+                        SelectAbility(activeSlot)
+                    }
+                    R.id.ftb_menu_mainhand -> {
+                        activeSlot =4
+                        SelectAbility(activeSlot)
+                    }
+                    R.id.ftb_menu_wait -> {
+                        activeSlot =5
+                        SelectAbility(activeSlot)
+                    }
+                }
+                return false
+            }
+        }*/
+
         CP().location = Pair(1,1)
 
         val p = CP().equipped
 
-        button_head.setText(p[0]?.name)
-        button_shoulders.setText(p[1]?.name)
-        button_legs.setText(p[2]?.name)
-        button_offHand.setText(p[3]?.name)
-        button_mainHand.setText(p[4]?.name)
+        textView_head.setText(p[0]?.name)
+        textView_shoulders.setText(p[1]?.name)
+        textView_legs.setText(p[2]?.name)
+        textView_offhand.setText(p[3]?.name)
+        textView_mainhand.setText(p[4]?.name)
 
-        button_head.setOnClickListener {
+        textView_head.setOnClickListener {
             activeSlot =0
             SelectAbility(activeSlot)
         }
-        button_shoulders.setOnClickListener {
+        textView_shoulders.setOnClickListener {
             activeSlot=1
             SelectAbility(activeSlot)
         }
-        button_legs.setOnClickListener {
+        textView_legs.setOnClickListener {
             activeSlot=2
             SelectAbility(activeSlot)
         }
-        button_offHand.setOnClickListener {
+        textView_offhand.setOnClickListener {
             activeSlot = 3
             SelectAbility(activeSlot)
         }
-        button_mainHand.setOnClickListener {
+        textView_mainhand.setOnClickListener {
             activeSlot = 4
             SelectAbility(activeSlot)
         }
@@ -164,20 +198,20 @@ class AdventureFragment : Fragment() {
         }
         val p = CP().equipped
         if(!(cooldowns[0]==0)){
-            button_head.setText("${p[0]?.name} (${cooldowns[0]})")
-        }else button_head.setText(p[0]?.name)
+            textView_head.setText("${p[0]?.name} (${cooldowns[0]})")
+        }else textView_head.setText(p[0]?.name)
         if(!(cooldowns[1]==0)){
-            button_shoulders.setText("${p[1]?.name} (${cooldowns[1]})")
-        }else button_shoulders.setText(p[1]?.name)
+            textView_shoulders.setText("${p[1]?.name} (${cooldowns[1]})")
+        }else textView_shoulders.setText(p[1]?.name)
         if(!(cooldowns[2]==0)){
-            button_legs.setText("${p[2]?.name} (${cooldowns[2]})")
-        }else button_legs.setText(p[2]?.name)
+            textView_legs.setText("${p[2]?.name} (${cooldowns[2]})")
+        }else textView_legs.setText(p[2]?.name)
         if(!(cooldowns[3]==0)){
-            button_offHand.setText("${p[3]?.name} (${cooldowns[3]})")
-        }else button_offHand.setText(p[3]?.name)
+            textView_offhand.setText("${p[3]?.name} (${cooldowns[3]})")
+        }else textView_offhand.setText(p[3]?.name)
         if(!(cooldowns[4]==0)){
-            button_mainHand.setText("${p[4]?.name} (${cooldowns[4]})")
-        }else button_mainHand.setText(p[4]?.name)
+            textView_mainhand.setText("${p[4]?.name} (${cooldowns[4]})")
+        }else textView_mainhand.setText(p[4]?.name)
     }
     fun CP() = (activity as MainActivity).currentPlayer
     fun IA() = (gridView_adventure.adapter as ImageAdapter)

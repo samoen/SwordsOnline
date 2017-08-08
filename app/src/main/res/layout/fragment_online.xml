@@ -2,7 +2,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:weightSum="1">
 
     <Button
         android:id="@+id/button_backFromAdventure"
@@ -11,60 +13,68 @@
         android:layout_margin="5dip"
         android:text="@string/leave_battle" />
 
+    <GridView
+        android:id="@+id/gridView_online"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="0.91"
+        android:numColumns="10" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/button_shoulders"
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/textView_head"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="45dp"
+            android:text="" />
+
+        <TextView
+            android:id="@+id/textView_shoulders"
+            android:layout_width="20dp"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:text="" />
+
+        <TextView
+            android:id="@+id/textView_legs"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="27dp"
+            android:text="" />
+
+        <TextView
+            android:id="@+id/textView_offhand"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="70dp"
             android:layout_weight="1"
             android:text="" />
 
-        <Button
-            android:id="@+id/button_head"
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/textView_mainhand"
+            android:layout_width="40dp"
             android:layout_height="wrap_content"
-            android:text="" />
-
-        <Button
-            android:id="@+id/button_wait"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/wait" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/button_mainHand"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="" />
-
-        <Button
-            android:id="@+id/button_offHand"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="" />
-
-        <Button
-            android:id="@+id/button_legs"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_marginRight="47dp"
+            android:layout_weight="1"
             android:text="" />
 
     </LinearLayout>
 
-    <GridView
-        android:id="@+id/gridView_adventure"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:numColumns="10" />
+        android:layout_height="wrap_content">
+
+        <sam.swordsonline.model.FoldingTabBar
+            android:id="@+id/folding_tab_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginBottom="@dimen/activity_horizontal_margin"
+            app:menu="@menu/menu_tab_bar"></sam.swordsonline.model.FoldingTabBar>
+    </RelativeLayout>
 
 </LinearLayout>

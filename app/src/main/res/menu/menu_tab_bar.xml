@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/ftb_menu_head"
+        android:icon="@drawable/head_icon"
+        android:title="Head" />
+
+    <item
+        android:id="@+id/ftb_menu_shoulders"
+        android:icon="@drawable/shoulders_icon"
+        android:title="Shoulders" />
+
+    <item
+        android:id="@+id/ftb_menu_legs"
+        android:icon="@drawable/legs_icon"
+        android:title="Legs" />
+    <item
+        android:id="@+id/ftb_menu_offhand"
+        android:icon="@drawable/offhand_icon"
+        android:title="Offhand"/>
+    <item
+        android:id="@+id/ftb_menu_mainhand"
+        android:icon="@drawable/mainhand_icon"
+        android:title="Mainhand" />
+    <item
+        android:id="@+id/ftb_menu_wait"
+        android:icon="@drawable/wait_icon"
+        android:title="Wait"/>
+
+</menu>

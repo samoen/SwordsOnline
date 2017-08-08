@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.support.v7.app.AlertDialog
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
@@ -16,6 +17,7 @@ import kotlinx.android.synthetic.main.fragment_online.*
 import sam.swordsonline.R
 import sam.swordsonline.adapter.OnlineImageAdapter
 import sam.swordsonline.model.CalculatePairFromPosition
+import sam.swordsonline.model.FoldingTabBar
 import sam.swordsonline.model.Item
 import sam.swordsonline.ui.activity.MainActivity
 
@@ -50,51 +52,51 @@ class OnlineFragment : Fragment() {
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        //Handler().postDelayed({folding_tab_bar.expand()},300)
+        folding_tab_bar.onFoldingItemClickListener = object : FoldingTabBar.OnFoldingItemSelectedListener {
+            override fun onFoldingItemSelected(item: MenuItem): Boolean {
+                when (item.itemId) {
+                    R.id.ftb_menu_head -> {
+                        activeSlot =0
+                        SelectAbility(activeSlot)
+                    }
+                    R.id.ftb_menu_shoulders -> {
+                        activeSlot =1
+                        SelectAbility(activeSlot)
+                    }
+                    R.id.ftb_menu_legs -> {
+                        activeSlot =2
+                        SelectAbility(activeSlot)
+                    }
+                    R.id.ftb_menu_offhand -> {
+                        activeSlot =3
+                        SelectAbility(activeSlot)
+                    }
+                    R.id.ftb_menu_mainhand -> {
+                        activeSlot =4
+                        SelectAbility(activeSlot)
+                    }
+                    R.id.ftb_menu_wait -> {
+                        activeSlot = 5
+                        IA().RemoveMarkers(playerNumber)
+                        FB("Player${playerNumber}Type","WAIT")
+                        FB("Player${playerNumber}Ready","READY")
+                        ClickableButtons(false)
+                    }
+                }
+                return false
+            }
+        }
+
         showProgressDialog()
 
         ClickableButtons(false)
 
         StartFB("GameRoom1")
 
-        gridView_adventure.adapter = OnlineImageAdapter(activity)
+        gridView_online.adapter = OnlineImageAdapter(activity)
 
-        button_head.setText(CP().equipped[0]?.name)
-        button_shoulders.setText(CP().equipped[1]?.name)
-        button_legs.setText(CP().equipped[2]?.name)
-        button_offHand.setText(CP().equipped[3]?.name)
-        button_mainHand.setText(CP().equipped[4]?.name)
-
-
-        button_head.setOnClickListener {
-            activeSlot =0
-            SelectAbility(activeSlot)
-        }
-        button_shoulders.setOnClickListener {
-            activeSlot=1
-            SelectAbility(activeSlot)
-        }
-        button_legs.setOnClickListener {
-            activeSlot=2
-            SelectAbility(activeSlot)
-        }
-        button_offHand.setOnClickListener {
-            activeSlot = 3
-            SelectAbility(activeSlot)
-        }
-        button_mainHand.setOnClickListener {
-            activeSlot = 4
-            SelectAbility(activeSlot)
-        }
-        button_wait.setOnClickListener {
-            activeSlot = 5
-            IA().RemoveMarkers(playerNumber)
-            FB("Player${playerNumber}Type","WAIT")
-            FB("Player${playerNumber}Ready","READY")
-            ClickableButtons(false)
-
-        }
-
-        gridView_adventure.setOnItemClickListener(object: AdapterView.OnItemClickListener{
+        gridView_online.setOnItemClickListener(object: AdapterView.OnItemClickListener{
             override fun onItemClick(parent: AdapterView<*>?, _view: View?, position: Int, id: Long) {
                 if(IA().activeMarkers.contains(CalculatePairFromPosition(position))){
                     if(cooldowns[activeSlot]==0){
@@ -321,11 +323,6 @@ class OnlineFragment : Fragment() {
             val old = v.value
             if(old>0) cooldowns.put(v.key,old-1)
         }
-        if(!(cooldowns[0]==0)){ button_head.setText("${CP().equipped[0]?.name} (${cooldowns[0]})") }else button_head.setText(CP().equipped[0]?.name)
-        if(!(cooldowns[1]==0)){ button_shoulders.setText("${CP().equipped[1]?.name} (${cooldowns[1]})") }else button_shoulders.setText(CP().equipped[1]?.name)
-        if(!(cooldowns[2]==0)){ button_legs.setText("${CP().equipped[2]?.name} (${cooldowns[2]})") }else button_legs.setText(CP().equipped[2]?.name)
-        if(!(cooldowns[3]==0)){ button_offHand.setText("${CP().equipped[3]?.name} (${cooldowns[3]})") }else button_offHand.setText(CP().equipped[3]?.name)
-        if(!(cooldowns[4]==0)){ button_mainHand.setText("${CP().equipped[4]?.name} (${cooldowns[4]})") }else button_mainHand.setText(CP().equipped[4]?.name)
     }
     fun showProgressDialog() {
         if (mProgressDialog == null) {
@@ -343,13 +340,21 @@ class OnlineFragment : Fragment() {
     }
     fun ClickableButtons(clickable:Boolean){
         if(this@OnlineFragment.activity != null){
-            button_head.isEnabled = clickable
-            button_shoulders.isEnabled = clickable
-            button_legs.isEnabled = clickable
-            button_mainHand.isEnabled = clickable
-            button_offHand.isEnabled = clickable
-            button_wait.isEnabled = clickable
-            button_backFromAdventure.isEnabled = clickable
+            if(clickable){
+                if(!(cooldowns[0]==0)){ textView_head.setText("${cooldowns[0]}") }else textView_head.setText("")
+                if(!(cooldowns[1]==0)){ textView_shoulders.setText("${cooldowns[1]}") }else textView_shoulders.setText("")
+                if(!(cooldowns[2]==0)){ textView_legs.setText("${cooldowns[2]}") }else textView_legs.setText("")
+                if(!(cooldowns[3]==0)){ textView_offhand.setText("${cooldowns[3]}") }else textView_offhand.setText("")
+                if(!(cooldowns[4]==0)){ textView_mainhand.setText("${cooldowns[4]}") }else textView_mainhand.setText("")
+                folding_tab_bar.expand()
+            }else if(!clickable){
+                textView_offhand.setText("")
+                textView_head.setText("")
+                textView_legs.setText("")
+                textView_mainhand.setText("")
+                textView_shoulders.setText("")
+                folding_tab_bar.rollUp()
+            }
         }
     }
 
@@ -382,5 +387,5 @@ class OnlineFragment : Fragment() {
 
 
     fun CP() = (activity as MainActivity).currentPlayer
-    fun IA() = (gridView_adventure.adapter as OnlineImageAdapter)
+    fun IA() = (gridView_online.adapter as OnlineImageAdapter)
 }
