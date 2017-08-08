@@ -91,7 +91,7 @@ class OnlineFragment : Fragment() {
 
         ClickableButtons(false)
 
-        StartFB("GameRoom1")
+        StartFB(CP().room)
 
         gridView_online.adapter = OnlineImageAdapter(activity)
 
@@ -178,9 +178,14 @@ class OnlineFragment : Fragment() {
                         IA().PutHeroToPosition(pos?:0,pNum)
                         FB("Player${pNum}Location", IA().PlayersBoardPos[pNum].toString())
                         if (IA().lootBags.containsKey(pos)){
-                            Toast.makeText(context,"loot $Loot , IAlootbag  ${IA().lootBags[pos]}",Toast.LENGTH_LONG).show()
+                            Toast.makeText(context,"Picked up a ${IL()[IA().lootBags[pos]]}",Toast.LENGTH_LONG).show()
                             CP().items.add(IL()[IA().lootBags[pos]]?: Item())
                             IA().RemoveLootBag(pos?:0)
+                        }
+                        if (pos == IA().cavePos){
+                            CP().room = "GameRoom2"
+                            LeaveFB()
+                            fragmentManager.beginTransaction().replace(R.id.framelayout_main, OnlineFragment()).commitAllowingStateLoss()
                         }
                     }
                 }
@@ -308,6 +313,9 @@ class OnlineFragment : Fragment() {
         FB("Player${playerNumber}Speed","0")
         FB("Player${playerNumber}Ready","NO_READY")
         FB("Player${playerNumber}Loot","0")
+
+        CP().room = "GameRoom1"
+
     }
 
     fun FB(key: String, value: String ){

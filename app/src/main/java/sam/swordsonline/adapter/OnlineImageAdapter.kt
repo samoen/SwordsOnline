@@ -24,8 +24,10 @@ class OnlineImageAdapter(private val mContext: Context) : BaseAdapter() {
     val enemy = R.drawable.green_hero_image
     val miss = R.drawable.miss_square
     val lootbag = R.drawable.loot_image
+    val cave = R.drawable.wait_icon
+    val cavePos = 1
     private val mThumbIds = arrayOf<Int>(
-            emptySquare, emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,
+            emptySquare,cave,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,
             emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,
             emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,
             emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,emptySquare,
