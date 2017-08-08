@@ -79,7 +79,7 @@ class OnlineImageAdapter(private val mContext: Context) : BaseAdapter() {
         notifyDataSetChanged()
     }
 
-    fun RemoveMarkers(pNum: Int){
+    fun RemoveMarkers(){
         for (v in activeMarkers){
             if(v.first in 1..10 && v.second in 1..10){
                 val pos = CalculatePositionFromPair(v)

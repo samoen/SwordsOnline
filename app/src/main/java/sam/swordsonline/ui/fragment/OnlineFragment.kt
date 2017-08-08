@@ -5,12 +5,14 @@ import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.os.Handler
+import android.os.SystemClock
 import android.support.v7.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
+import android.widget.Chronometer
 import android.widget.Toast
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.fragment_online.*
@@ -52,6 +54,16 @@ class OnlineFragment : Fragment() {
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        chronometer_time.base = SystemClock.elapsedRealtime() + 500
+        chronometer_time.onChronometerTickListener = object: Chronometer.OnChronometerTickListener {
+            override fun onChronometerTick(chronometer: Chronometer?) {
+                if(chronometer?.text == "00:10"){
+                    chronometer_time.stop()
+                    Wait()
+                }
+            }
+        }
+
         folding_tab_bar.onFoldingItemClickListener = object : FoldingTabBar.OnFoldingItemSelectedListener {
             override fun onFoldingItemSelected(item: MenuItem): Boolean {
                 when (item.itemId) {
@@ -76,11 +88,7 @@ class OnlineFragment : Fragment() {
                         SelectAbility(activeSlot)
                     }
                     R.id.ftb_menu_wait -> {
-                        activeSlot = 5
-                        IA().RemoveMarkers(playerNumber)
-                        FB("Player${playerNumber}Type","WAIT")
-                        FB("Player${playerNumber}Ready","READY")
-                        ClickableButtons(false)
+                        Wait()
                     }
                 }
                 return false
@@ -99,7 +107,7 @@ class OnlineFragment : Fragment() {
             override fun onItemClick(parent: AdapterView<*>?, _view: View?, position: Int, id: Long) {
                 if(IA().activeMarkers.contains(CalculatePairFromPosition(position))){
                     if(cooldowns[activeSlot]==0){
-                        IA().RemoveMarkers(playerNumber)
+                        IA().RemoveMarkers()
                         FB("Player${playerNumber}Type",activeAbilityType.toUpperCase())
                         FB("Player${playerNumber}Position",position.toString())
                         FB("Player${playerNumber}Speed",myspd.toString())
@@ -264,13 +272,10 @@ class OnlineFragment : Fragment() {
                                     inc++
                                 }
                                 Handler().postDelayed({
-                                    ClickableButtons(true)
                                     if(this@OnlineFragment.activity != null){
-                                        IA().ClearLastMiss()
+                                        FB("Player${playerNumber}Ready","WAITING")
                                     }
-                                    lockPlayers = false
                                 },300*activePlayerNames.size.toLong())
-                                FB("Player${playerNumber}Ready","WAITING")
                             }
 
                         }else if (playerReadies[playerNumber]=="WAITING"){
@@ -282,6 +287,9 @@ class OnlineFragment : Fragment() {
                             }
                             if (result){
                                 FB("Player${playerNumber}Ready","NOT_READY")
+                                ClickableButtons(true)
+                                IA().ClearLastMiss()
+                                lockPlayers = false
                             }
 
                         }else if (playerReadies[playerNumber]=="NOT_READY"){
@@ -322,10 +330,17 @@ class OnlineFragment : Fragment() {
         mDatabase?.child(key)?.setValue(value)
     }
     fun SelectAbility(slot: Int){
-        IA().RemoveMarkers(playerNumber)
+        IA().RemoveMarkers()
         myspd=CP().equipped.get(slot)?.ability?.speed?:0
         activeAbilityType = CP().equipped.get(slot)?.ability?.type?:""
         IA().PlaceMarkers(CP().equipped.get(slot)?.ability?.relative_pairs?: listOf(),playerNumber)
+    }
+    fun Wait(){
+        activeSlot = 5
+        IA().RemoveMarkers()
+        FB("Player${playerNumber}Type","WAIT")
+        FB("Player${playerNumber}Ready","READY")
+        ClickableButtons(false)
     }
     fun DecrementAllCooldowns(){
         for(v in cooldowns){
@@ -350,20 +365,29 @@ class OnlineFragment : Fragment() {
     fun ClickableButtons(clickable:Boolean){
         if(this@OnlineFragment.activity != null){
             if(clickable){
-                if(!(cooldowns[0]==0)){ textView_head.setText("${cooldowns[0]}") }else textView_head.setText("")
-                if(!(cooldowns[1]==0)){ textView_shoulders.setText("${cooldowns[1]}") }else textView_shoulders.setText("")
-                if(!(cooldowns[2]==0)){ textView_legs.setText("${cooldowns[2]}") }else textView_legs.setText("")
-                if(!(cooldowns[3]==0)){ textView_offhand.setText("${cooldowns[3]}") }else textView_offhand.setText("")
-                if(!(cooldowns[4]==0)){ textView_mainhand.setText("${cooldowns[4]}") }else textView_mainhand.setText("")
+                ShowCooldownTextViews(false)
                 folding_tab_bar.expand()
+                chronometer_time.base = SystemClock.elapsedRealtime()
+                chronometer_time.start()
             }else if(!clickable){
-                textView_offhand.setText("")
-                textView_head.setText("")
-                textView_legs.setText("")
-                textView_mainhand.setText("")
-                textView_shoulders.setText("")
+                ShowCooldownTextViews(true)
                 folding_tab_bar.rollUp()
             }
+        }
+    }
+    fun ShowCooldownTextViews(showBlank:Boolean){
+        if (showBlank){
+            textView_offhand.setText("")
+            textView_head.setText("")
+            textView_legs.setText("")
+            textView_mainhand.setText("")
+            textView_shoulders.setText("")
+        }else if (!showBlank){
+            if(cooldowns[0]!=0){ textView_head.setText("${cooldowns[0]}") }else textView_head.setText("")
+            if(cooldowns[1]!=0){ textView_shoulders.setText("${cooldowns[1]}") }else textView_shoulders.setText("")
+            if(cooldowns[2]!=0){ textView_legs.setText("${cooldowns[2]}") }else textView_legs.setText("")
+            if(cooldowns[3]!=0){ textView_offhand.setText("${cooldowns[3]}") }else textView_offhand.setText("")
+            if(cooldowns[4]!=0){ textView_mainhand.setText("${cooldowns[4]}") }else textView_mainhand.setText("")
         }
     }
 
